@@ -10,8 +10,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  sameSite: 'none' as const, // Allow cross-site cookies
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined // Share cookies across onrender.com subdomains
 };
 
 // LOGIN
