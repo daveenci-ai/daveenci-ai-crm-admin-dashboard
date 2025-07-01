@@ -59,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="anton@daveenci.ai"
+              placeholder="email@example.com"
               required
               disabled={isLoading}
             />
@@ -92,9 +92,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         <div className="login-footer">
           <p>
-            <strong>Demo Credentials:</strong><br />
-            Email: anton@daveenci.ai<br />
-            Password: secret123
+            <strong>Demo Available</strong><br />
+            Contact your administrator for login credentials
           </p>
         </div>
       </div>
