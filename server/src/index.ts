@@ -2,13 +2,25 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import authRoutes from './routes/auth';
+import { requireAuth, AuthenticatedRequest } from './middleware/requireAuth';
 
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-frontend-domain.com'] 
+    : ['http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
+
+// Auth routes (unprotected)
+app.use('/api/auth', authRoutes);
 
 // Root endpoint - API info
 app.get('/', (req, res) => {
@@ -30,25 +42,27 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Daveenci CRM API is running' });
 });
 
-// Get all contacts
-app.get('/api/contacts', async (req, res) => {
+// Get all contacts (protected)
+app.get('/api/contacts', requireAuth, async (req, res) => {
   try {
-      const contacts = await prisma.contact.findMany({
-    include: {
-      touchpoints: {
-        orderBy: {
-          createdAt: 'desc'
-        }
-      },
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true
+    const userId = (req as AuthenticatedRequest).user.id;
+    const contacts = await prisma.contact.findMany({
+      where: { userId },
+      include: {
+        touchpoints: {
+          orderBy: {
+            createdAt: 'desc'
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
         }
       }
-    }
-  });
+    });
     res.json(contacts);
   } catch (error) {
     console.error('Error fetching contacts:', error);
@@ -56,8 +70,8 @@ app.get('/api/contacts', async (req, res) => {
   }
 });
 
-// Get a single contact by ID
-app.get('/api/contacts/:id', async (req, res) => {
+// Get a single contact by ID (protected)
+app.get('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
     const contact = await prisma.contact.findUnique({
@@ -87,14 +101,15 @@ app.get('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// Create a new contact
-app.post('/api/contacts', async (req, res) => {
+// Create a new contact (protected)
+app.post('/api/contacts', requireAuth, async (req, res) => {
   try {
-    const { name, email, phone, company, source, status, notes, userId } = req.body;
+    const { name, email, phone, company, source, status, notes } = req.body;
+    const userId = (req as AuthenticatedRequest).user.id;
     
     // Basic validation
-    if (!name || !email || !userId) {
-      return res.status(400).json({ error: 'Name, email, and userId are required' });
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
     }
     
     const newContact = await prisma.contact.create({ 
@@ -127,8 +142,8 @@ app.post('/api/contacts', async (req, res) => {
   }
 });
 
-// Update a contact
-app.put('/api/contacts/:id', async (req, res) => {
+// Update a contact (protected)
+app.put('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
     const { name, email, phone, company, source, status, notes } = req.body;
@@ -167,8 +182,8 @@ app.put('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// Delete a contact
-app.delete('/api/contacts/:id', async (req, res) => {
+// Delete a contact (protected)
+app.delete('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
     
@@ -189,8 +204,8 @@ app.delete('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// Add a touchpoint to a contact
-app.post('/api/contacts/:id/touchpoints', async (req, res) => {
+// Add a touchpoint to a contact (protected)
+app.post('/api/contacts/:id/touchpoints', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
     const { note, source = 'MANUAL' } = req.body;
@@ -202,7 +217,7 @@ app.post('/api/contacts/:id/touchpoints', async (req, res) => {
     const touchpoint = await prisma.touchpoint.create({
       data: {
         note,
-        source,
+        // source, // TODO: Enable after migration is applied
         contactId
       }
     });

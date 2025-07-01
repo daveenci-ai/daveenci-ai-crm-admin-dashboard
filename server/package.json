@@ -17,10 +17,17 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.11.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^4.18.2",
-    "prisma": "^6.11.0"
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.11.0",
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
