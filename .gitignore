@@ -22,8 +22,7 @@ server/.env
 *.db
 *.sqlite
 
-# Prisma
-server/prisma/migrations/**/migration.sql
+# Prisma - Note: migration files should be committed to git
 
 # Logs
 logs
