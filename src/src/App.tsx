@@ -165,13 +165,32 @@ function App() {
     if (!touchpointNote.trim()) return;
     
     try {
-      await axios.post(`${API_BASE_URL}/contacts/${contactId}/touchpoints`, {
+      const response = await axios.post(`${API_BASE_URL}/contacts/${contactId}/touchpoints`, {
         note: touchpointNote,
         source: touchpointSource
       });
+      
+      // Get the new touchpoint from the response
+      const newTouchpoint = response.data;
+      
+      // Update the selected contact immediately
+      if (selectedContact?.id === contactId) {
+        setSelectedContact({
+          ...selectedContact,
+          touchpoints: [newTouchpoint, ...selectedContact.touchpoints]
+        });
+      }
+      
+      // Update the contacts list
+      setContacts(contacts.map(contact => 
+        contact.id === contactId 
+          ? { ...contact, touchpoints: [newTouchpoint, ...contact.touchpoints] }
+          : contact
+      ));
+      
+      // Reset form
       setTouchpointNote('');
       setTouchpointSource('MANUAL');
-      fetchData(); // Refresh data to get updated touchpoints
     } catch (err) {
       setError('Failed to add touchpoint');
       console.error('Error adding touchpoint:', err);
@@ -622,7 +641,10 @@ function App() {
                     <label>Source:</label>
                     <select
                       value={touchpointSource}
-                      onChange={(e) => setTouchpointSource(e.target.value as any)}
+                      onChange={(e) => {
+                        console.log('Dropdown changed to:', e.target.value);
+                        setTouchpointSource(e.target.value as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER');
+                      }}
                     >
                       <option value="MANUAL">✏️ Manual</option>
                       <option value="EMAIL">📧 Email</option>
@@ -632,6 +654,7 @@ function App() {
                       <option value="EVENT">🎯 Event</option>
                       <option value="OTHER">🔧 Other</option>
                     </select>
+                    <span style={{fontSize: '12px', color: '#666'}}>Current: {touchpointSource}</span>
                   </div>
                   <textarea
                     placeholder="Add a new touchpoint..."
