@@ -34,7 +34,7 @@ interface User {
   createdAt: string;
 }
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
 
 function App() {
   const [contacts, setContacts] = useState<Contact[]>([]);
