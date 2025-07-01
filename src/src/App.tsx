@@ -55,7 +55,7 @@ function App() {
     source: '',
     status: 'PROSPECT' as const,
     notes: '',
-    userId: 1
+    userId: 1 // Will be updated when users are loaded
   });
 
   const [touchpointNote, setTouchpointNote] = useState('');
@@ -73,6 +73,11 @@ function App() {
       ]);
       setContacts(contactsRes.data);
       setUsers(usersRes.data);
+      
+      // Update form userId to first available user
+      if (usersRes.data.length > 0) {
+        setFormData(prev => ({ ...prev, userId: usersRes.data[0].id }));
+      }
     } catch (err) {
       setError('Failed to fetch data. Make sure the backend server is running.');
       console.error('Error fetching data:', err);
@@ -83,6 +88,13 @@ function App() {
 
   const createContact = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ensure we have a valid user
+    if (users.length === 0) {
+      setError('No users available. Please create a user first.');
+      return;
+    }
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/contacts`, formData);
       setContacts([response.data, ...contacts]);
@@ -94,7 +106,7 @@ function App() {
         source: '',
         status: 'PROSPECT',
         notes: '',
-        userId: 1
+        userId: users.length > 0 ? users[0].id : 1
       });
       setShowCreateForm(false);
     } catch (err) {
