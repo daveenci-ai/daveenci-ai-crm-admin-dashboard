@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Login from './Login';
 import './App.css';
+
+// Configure axios to send cookies
+axios.defaults.withCredentials = true;
 
 interface Contact {
   id: number;
@@ -38,6 +42,11 @@ interface User {
 const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
 
 function App() {
+  // Authentication state
+  const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  
+  // App state
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -68,25 +77,50 @@ function App() {
   const [originalContact, setOriginalContact] = useState<Contact | null>(null);
 
   useEffect(() => {
-    fetchData();
+    checkAuthStatus();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/auth/me`);
+      setUser(response.data.user);
+    } catch (err) {
+      // User not authenticated, will show login
+      setUser(null);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleLoginSuccess = (userData: { id: number; email: string; name: string }) => {
+    setUser(userData);
+    setIsAuthLoading(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/auth/logout`);
+      setUser(null);
+      setContacts([]);
+      setSelectedContact(null);
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+  };
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [contactsRes, usersRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/contacts`),
-        axios.get(`${API_BASE_URL}/users`)
-      ]);
+      const contactsRes = await axios.get(`${API_BASE_URL}/contacts`);
       setContacts(contactsRes.data);
-      setUsers(usersRes.data);
-      
-      // Update form userId to first available user
-      if (usersRes.data.length > 0) {
-        setFormData(prev => ({ ...prev, userId: usersRes.data[0].id }));
-      }
     } catch (err) {
-      setError('Failed to fetch data. Make sure the backend server is running.');
+      setError('Failed to fetch data. Please try refreshing the page.');
       console.error('Error fetching data:', err);
     } finally {
       setIsLoading(false);
@@ -95,12 +129,6 @@ function App() {
 
   const createContact = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Ensure we have a valid user
-    if (users.length === 0) {
-      setError('No users available. Please create a user first.');
-      return;
-    }
     
     try {
       const response = await axios.post(`${API_BASE_URL}/contacts`, formData);
@@ -113,7 +141,7 @@ function App() {
         source: '',
         status: 'PROSPECT',
         notes: '',
-        userId: users.length > 0 ? users[0].id : 1
+        userId: 1 // This field is ignored by backend now
       });
       setShowCreateForm(false);
     } catch (err) {
@@ -248,12 +276,30 @@ function App() {
     }
   };
 
-  if (isLoading) {
+  // Show loading while checking authentication
+  if (isAuthLoading) {
     return (
       <div className="app-container">
         <div className="loading">
           <div className="spinner"></div>
           <p>Loading Daveenci CRM...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!user) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Show app loading while fetching data
+  if (isLoading) {
+    return (
+      <div className="app-container">
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Loading your contacts...</p>
         </div>
       </div>
     );
@@ -265,14 +311,22 @@ function App() {
         <div className="header-content">
           <div className="logo-section">
             <h1>🚀 Daveenci CRM</h1>
-            <p>Manage your contacts and grow your business</p>
+            <p>Welcome back, {user.name}!</p>
           </div>
-          <button 
-            className="create-btn"
-            onClick={() => setShowCreateForm(true)}
-          >
-            + Add Contact
-          </button>
+          <div className="header-actions">
+            <button 
+              className="create-btn"
+              onClick={() => setShowCreateForm(true)}
+            >
+              + Add Contact
+            </button>
+            <button 
+              className="logout-btn"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
