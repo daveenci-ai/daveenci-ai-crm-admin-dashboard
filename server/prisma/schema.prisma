@@ -43,11 +43,12 @@ model Contact {
 }
 
 model Touchpoint {
-  id         Int       @id @default(autoincrement())
+  id         Int             @id @default(autoincrement())
   note       String
-  contact    Contact   @relation(fields: [contactId], references: [id])
-  contactId  Int       @map("contact_id")
-  createdAt  DateTime  @default(now()) @map("created_at")
+  source     TouchpointSource @default(MANUAL)
+  contact    Contact         @relation(fields: [contactId], references: [id])
+  contactId  Int             @map("contact_id")
+  createdAt  DateTime        @default(now()) @map("created_at")
 
   @@map("touchpoints")
 }
@@ -59,4 +60,15 @@ enum Status {
   CLIENT
 
   @@map("status")
+}
+
+enum TouchpointSource {
+  MANUAL
+  EMAIL
+  SMS
+  PHONE
+  MEETING
+  AUTO
+
+  @@map("touchpoint_source")
 }

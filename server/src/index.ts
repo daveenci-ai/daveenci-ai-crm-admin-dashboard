@@ -33,18 +33,22 @@ app.get('/api/health', (req, res) => {
 // Get all contacts
 app.get('/api/contacts', async (req, res) => {
   try {
-    const contacts = await prisma.contact.findMany({ 
-      include: { 
-        touchpoints: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+      const contacts = await prisma.contact.findMany({
+    include: {
+      touchpoints: {
+        orderBy: {
+          createdAt: 'desc'
         }
-      } 
-    });
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  });
     res.json(contacts);
   } catch (error) {
     console.error('Error fetching contacts:', error);
@@ -141,7 +145,11 @@ app.put('/api/contacts/:id', async (req, res) => {
         notes
       },
       include: {
-        touchpoints: true,
+        touchpoints: {
+          orderBy: {
+            createdAt: 'desc'
+          }
+        },
         user: {
           select: {
             id: true,
@@ -185,7 +193,7 @@ app.delete('/api/contacts/:id', async (req, res) => {
 app.post('/api/contacts/:id/touchpoints', async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
-    const { note } = req.body;
+    const { note, source = 'MANUAL' } = req.body;
     
     if (!note) {
       return res.status(400).json({ error: 'Note is required' });
@@ -194,6 +202,7 @@ app.post('/api/contacts/:id/touchpoints', async (req, res) => {
     const touchpoint = await prisma.touchpoint.create({
       data: {
         note,
+        source,
         contactId
       }
     });
