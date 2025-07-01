@@ -243,7 +243,7 @@ app.post('/api/contacts/:id/touchpoints', requireAuth, async (req, res) => {
     const touchpoint = await prisma.touchpoint.create({
       data: {
         note,
-        // source, // TODO: Enable after migration is applied
+        source, // Now enabled after migration is applied
         contactId
       }
     });
@@ -252,6 +252,40 @@ app.post('/api/contacts/:id/touchpoints', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Error creating touchpoint:', error);
     res.status(500).json({ error: 'Failed to create touchpoint' });
+  }
+});
+
+// Delete a touchpoint (protected)
+app.delete('/api/touchpoints/:id', requireAuth, async (req, res) => {
+  try {
+    const touchpointId = parseInt(req.params.id);
+    
+    // Verify the touchpoint exists and belongs to a contact owned by the authenticated user
+    const touchpoint = await prisma.touchpoint.findUnique({
+      where: { id: touchpointId },
+      include: {
+        contact: true
+      }
+    });
+    
+    if (!touchpoint) {
+      return res.status(404).json({ error: 'Touchpoint not found' });
+    }
+    
+    // Check if the contact belongs to the authenticated user
+    const userId = (req as AuthenticatedRequest).user.id;
+    if (touchpoint.contact.userId !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    await prisma.touchpoint.delete({
+      where: { id: touchpointId }
+    });
+    
+    res.json({ message: 'Touchpoint deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting touchpoint:', error);
+    res.status(500).json({ error: 'Failed to delete touchpoint' });
   }
 });
 

@@ -173,27 +173,55 @@ function App() {
       // Get the new touchpoint from the response
       const newTouchpoint = response.data;
       
-      // Update the selected contact immediately
-      if (selectedContact?.id === contactId) {
+      // Update selected contact immediately
+      if (selectedContact) {
         setSelectedContact({
           ...selectedContact,
           touchpoints: [newTouchpoint, ...selectedContact.touchpoints]
         });
+        
+        // Also update the contact in the contacts array
+        setContacts(prevContacts => 
+          prevContacts.map(contact => 
+            contact.id === contactId 
+              ? { ...contact, touchpoints: [newTouchpoint, ...contact.touchpoints] }
+              : contact
+          )
+        );
       }
       
-      // Update the contacts list
-      setContacts(contacts.map(contact => 
-        contact.id === contactId 
-          ? { ...contact, touchpoints: [newTouchpoint, ...contact.touchpoints] }
-          : contact
-      ));
-      
-      // Reset form
       setTouchpointNote('');
       setTouchpointSource('MANUAL');
     } catch (err) {
       setError('Failed to add touchpoint');
       console.error('Error adding touchpoint:', err);
+    }
+  };
+
+  const deleteTouchpoint = async (touchpointId: number) => {
+    if (!selectedContact) return;
+    
+    try {
+      await axios.delete(`${API_BASE_URL}/touchpoints/${touchpointId}`);
+      
+      // Update selected contact immediately
+      const updatedTouchpoints = selectedContact.touchpoints.filter(tp => tp.id !== touchpointId);
+      setSelectedContact({
+        ...selectedContact,
+        touchpoints: updatedTouchpoints
+      });
+      
+      // Also update the contact in the contacts array
+      setContacts(prevContacts => 
+        prevContacts.map(contact => 
+          contact.id === selectedContact.id 
+            ? { ...contact, touchpoints: updatedTouchpoints }
+            : contact
+        )
+      );
+    } catch (err) {
+      setError('Failed to delete touchpoint');
+      console.error('Error deleting touchpoint:', err);
     }
   };
 
@@ -677,9 +705,18 @@ function App() {
                         <span className="touchpoint-date">
                           {formatDate(touchpoint.createdAt)}
                         </span>
-                        <span className="source-icon" title={getTouchpointSourceLabel(touchpoint.source)}>
-                          {getTouchpointSourceIcon(touchpoint.source)}
-                        </span>
+                        <div className="touchpoint-actions">
+                          <span className="source-icon" title={getTouchpointSourceLabel(touchpoint.source)}>
+                            {getTouchpointSourceIcon(touchpoint.source)}
+                          </span>
+                          <button 
+                            className="delete-touchpoint-btn"
+                            onClick={() => deleteTouchpoint(touchpoint.id)}
+                            title="Delete touchpoint"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                       <p className="touchpoint-note">{touchpoint.note}</p>
                     </div>
