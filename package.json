@@ -1,0 +1,27 @@
+{
+  "name": "daveenci-crm",
+  "version": "1.0.0",
+  "description": "A simple, clean CRM system built with React, Node.js, Prisma, and PostgreSQL",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix src\"",
+    "build": "npm run build --prefix server && npm run build --prefix src",
+    "start:server": "npm start --prefix server",
+    "start:frontend": "npm start --prefix src",
+    "setup": "npm install && npm install --prefix server && npm install --prefix src",
+    "db:migrate": "npm run db:migrate --prefix server",
+    "db:studio": "npm run db:studio --prefix server"
+  },
+  "keywords": [
+    "crm",
+    "react",
+    "nodejs",
+    "prisma",
+    "postgresql"
+  ],
+  "author": "Daveenci",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
