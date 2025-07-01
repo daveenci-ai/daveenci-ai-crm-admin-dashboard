@@ -15,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = 'https://crm.daveenci.ai/api';
+  const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +27,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         email,
         password
       });
+      
+      // Store JWT token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+        // Set default authorization header for future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+      }
       
       // Login successful
       onLoginSuccess(response.data.user);
@@ -41,7 +48,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>🚀 Daveenci CRM</h1>
+          <h1>🚀 DaVeenci CRM</h1>
           <p>Sign in to manage your contacts</p>
         </div>
 
@@ -89,13 +96,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             )}
           </button>
         </form>
-
-        <div className="login-footer">
-          <p>
-            <strong>Demo Available</strong><br />
-            Contact your administrator for login credentials
-          </p>
-        </div>
       </div>
     </div>
   );

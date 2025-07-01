@@ -60,7 +60,11 @@ router.post('/logout', (_req, res) => {
 // GET CURRENT USER
 router.get('/me', async (req, res) => {
   try {
-    const token = req.cookies?.token;
+    // Try to get token from Authorization header first, then fallback to cookies
+    const authHeader = req.headers.authorization;
+    let token = authHeader && authHeader.startsWith('Bearer ') 
+      ? authHeader.substring(7) 
+      : req.cookies?.token;
     
     if (!token) {
       return res.status(401).json({ error: 'Not authenticated' });

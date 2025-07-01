@@ -39,7 +39,7 @@ interface User {
   createdAt: string;
 }
 
-const API_BASE_URL = 'https://crm.daveenci.ai/api';
+const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
 
 function App() {
   // Authentication state
@@ -77,6 +77,11 @@ function App() {
   const [originalContact, setOriginalContact] = useState<Contact | null>(null);
 
   useEffect(() => {
+    // Check for stored auth token on app load
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
     checkAuthStatus();
   }, []);
 
@@ -91,7 +96,9 @@ function App() {
       const response = await axios.get(`${API_BASE_URL}/auth/me`);
       setUser(response.data.user);
     } catch (err) {
-      // User not authenticated, will show login
+      // User not authenticated, clear any stored token
+      localStorage.removeItem('authToken');
+      delete axios.defaults.headers.common['Authorization'];
       setUser(null);
     } finally {
       setIsAuthLoading(false);
@@ -106,11 +113,15 @@ function App() {
   const handleLogout = async () => {
     try {
       await axios.post(`${API_BASE_URL}/auth/logout`);
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      // Clear token and user data regardless of API call result
+      localStorage.removeItem('authToken');
+      delete axios.defaults.headers.common['Authorization'];
       setUser(null);
       setContacts([]);
       setSelectedContact(null);
-    } catch (err) {
-      console.error('Logout error:', err);
     }
   };
 
