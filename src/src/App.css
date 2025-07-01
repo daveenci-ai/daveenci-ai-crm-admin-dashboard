@@ -634,3 +634,142 @@ body {
 .details-panel::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Inline Editing Styles */
+.editable-field {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  min-height: 1.5rem;
+  display: inline-block;
+  min-width: 100px;
+}
+
+.editable-field:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.editable-field.status-badge:hover {
+  opacity: 0.8;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-field input,
+.edit-field select {
+  padding: 0.5rem;
+  border: 1px solid #3b82f6;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-buttons button {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.edit-buttons button:first-child {
+  background: #10b981;
+  color: white;
+}
+
+.edit-buttons button:first-child:hover {
+  background: #059669;
+}
+
+.edit-buttons button:last-child {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.edit-buttons button:last-child:hover {
+  background: #e5e7eb;
+}
+
+/* Touchpoint Source Styles */
+.touchpoint-source-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.touchpoint-source-selector label {
+  font-weight: 500;
+  color: #374151;
+  min-width: 60px;
+}
+
+.touchpoint-source-selector select {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.touchpoint-source-selector select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.touchpoint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.touchpoint-source {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+}
+
+.source-icon {
+  font-size: 1rem;
+}
+
+.source-label {
+  font-weight: 500;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.touchpoint-note {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.touchpoint-date {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}

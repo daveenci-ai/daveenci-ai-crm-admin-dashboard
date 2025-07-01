@@ -24,6 +24,7 @@ interface Contact {
 interface Touchpoint {
   id: number;
   note: string;
+  source: 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'MEETING' | 'AUTO';
   createdAt: string;
 }
 
@@ -59,6 +60,12 @@ function App() {
   });
 
   const [touchpointNote, setTouchpointNote] = useState('');
+  const [touchpointSource, setTouchpointSource] = useState<'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'MEETING' | 'AUTO'>('MANUAL');
+  
+  // Inline editing state
+  const [editingField, setEditingField] = useState<{field: string, contactId: number} | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const [originalContact, setOriginalContact] = useState<Contact | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -120,9 +127,11 @@ function App() {
     
     try {
       await axios.post(`${API_BASE_URL}/contacts/${contactId}/touchpoints`, {
-        note: touchpointNote
+        note: touchpointNote,
+        source: touchpointSource
       });
       setTouchpointNote('');
+      setTouchpointSource('MANUAL');
       fetchData(); // Refresh data to get updated touchpoints
     } catch (err) {
       setError('Failed to add touchpoint');
@@ -140,6 +149,50 @@ function App() {
     } catch (err) {
       setError('Failed to delete contact');
       console.error('Error deleting contact:', err);
+    }
+  };
+
+  // Inline editing functions
+  const startEditing = (field: string, contactId: number, currentValue: string) => {
+    const contact = contacts.find(c => c.id === contactId);
+    if (contact) {
+      setOriginalContact(contact);
+      setEditingField({ field, contactId });
+      setEditingValue(currentValue);
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingField(null);
+    setEditingValue('');
+    setOriginalContact(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingField || !originalContact) return;
+
+    try {
+      const updatedData = {
+        ...originalContact,
+        [editingField.field]: editingValue
+      };
+
+      const response = await axios.put(`${API_BASE_URL}/contacts/${editingField.contactId}`, updatedData);
+      
+      // Update contacts list
+      setContacts(contacts.map(c => 
+        c.id === editingField.contactId ? response.data : c
+      ));
+      
+      // Update selected contact if it's the one being edited
+      if (selectedContact?.id === editingField.contactId) {
+        setSelectedContact(response.data);
+      }
+
+      cancelEditing();
+    } catch (err) {
+      setError('Failed to update contact');
+      console.error('Error updating contact:', err);
     }
   };
 
@@ -169,6 +222,30 @@ function App() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const getTouchpointSourceIcon = (source: string) => {
+    switch (source) {
+      case 'MANUAL': return '✏️';
+      case 'EMAIL': return '📧';
+      case 'SMS': return '💬';
+      case 'PHONE': return '📞';
+      case 'MEETING': return '🤝';
+      case 'AUTO': return '🤖';
+      default: return '✏️';
+    }
+  };
+
+  const getTouchpointSourceLabel = (source: string) => {
+    switch (source) {
+      case 'MANUAL': return 'Manual';
+      case 'EMAIL': return 'Email';
+      case 'SMS': return 'SMS';
+      case 'PHONE': return 'Phone';
+      case 'MEETING': return 'Meeting';
+      case 'AUTO': return 'Auto';
+      default: return 'Manual';
+    }
   };
 
   if (isLoading) {
@@ -284,35 +361,177 @@ function App() {
               <div className="contact-info">
                 <div className="info-grid">
                   <div className="info-item">
-                    <label>Email:</label>
-                    <span>{selectedContact.email}</span>
+                    <label>Name:</label>
+                    {editingField?.field === 'name' && editingField?.contactId === selectedContact.id ? (
+                      <div className="edit-field">
+                        <input
+                          type="text"
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                          autoFocus
+                        />
+                        <div className="edit-buttons">
+                          <button onClick={saveEdit}>Save</button>
+                          <button onClick={cancelEditing}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span
+                        className="editable-field"
+                        onDoubleClick={() => startEditing('name', selectedContact.id, selectedContact.name)}
+                      >
+                        {selectedContact.name}
+                      </span>
+                    )}
                   </div>
-                  {selectedContact.phone && (
-                    <div className="info-item">
-                      <label>Phone:</label>
-                      <span>{selectedContact.phone}</span>
-                    </div>
-                  )}
-                  {selectedContact.company && (
-                    <div className="info-item">
-                      <label>Company:</label>
-                      <span>{selectedContact.company}</span>
-                    </div>
-                  )}
-                  {selectedContact.source && (
-                    <div className="info-item">
-                      <label>Source:</label>
-                      <span>{selectedContact.source}</span>
-                    </div>
-                  )}
+                  <div className="info-item">
+                    <label>Email:</label>
+                    {editingField?.field === 'email' && editingField?.contactId === selectedContact.id ? (
+                      <div className="edit-field">
+                        <input
+                          type="email"
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                          autoFocus
+                        />
+                        <div className="edit-buttons">
+                          <button onClick={saveEdit}>Save</button>
+                          <button onClick={cancelEditing}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span
+                        className="editable-field"
+                        onDoubleClick={() => startEditing('email', selectedContact.id, selectedContact.email)}
+                      >
+                        {selectedContact.email}
+                      </span>
+                    )}
+                  </div>
+                  <div className="info-item">
+                    <label>Phone:</label>
+                    {editingField?.field === 'phone' && editingField?.contactId === selectedContact.id ? (
+                      <div className="edit-field">
+                        <input
+                          type="tel"
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                          autoFocus
+                        />
+                        <div className="edit-buttons">
+                          <button onClick={saveEdit}>Save</button>
+                          <button onClick={cancelEditing}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span
+                        className="editable-field"
+                        onDoubleClick={() => startEditing('phone', selectedContact.id, selectedContact.phone || '')}
+                      >
+                        {selectedContact.phone || 'Add phone'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="info-item">
+                    <label>Company:</label>
+                    {editingField?.field === 'company' && editingField?.contactId === selectedContact.id ? (
+                      <div className="edit-field">
+                        <input
+                          type="text"
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                          autoFocus
+                        />
+                        <div className="edit-buttons">
+                          <button onClick={saveEdit}>Save</button>
+                          <button onClick={cancelEditing}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span
+                        className="editable-field"
+                        onDoubleClick={() => startEditing('company', selectedContact.id, selectedContact.company || '')}
+                      >
+                        {selectedContact.company || 'Add company'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="info-item">
+                    <label>Source:</label>
+                    {editingField?.field === 'source' && editingField?.contactId === selectedContact.id ? (
+                      <div className="edit-field">
+                        <input
+                          type="text"
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                          autoFocus
+                        />
+                        <div className="edit-buttons">
+                          <button onClick={saveEdit}>Save</button>
+                          <button onClick={cancelEditing}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span
+                        className="editable-field"
+                        onDoubleClick={() => startEditing('source', selectedContact.id, selectedContact.source || '')}
+                      >
+                        {selectedContact.source || 'Add source'}
+                      </span>
+                    )}
+                  </div>
                   <div className="info-item">
                     <label>Status:</label>
-                    <span 
-                      className="status-badge"
-                      style={{ backgroundColor: getStatusColor(selectedContact.status) }}
-                    >
-                      {selectedContact.status}
-                    </span>
+                    {editingField?.field === 'status' && editingField?.contactId === selectedContact.id ? (
+                      <div className="edit-field">
+                        <select
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                          autoFocus
+                        >
+                          <option value="PROSPECT">Prospect</option>
+                          <option value="LEAD">Lead</option>
+                          <option value="OPPORTUNITY">Opportunity</option>
+                          <option value="CLIENT">Client</option>
+                        </select>
+                        <div className="edit-buttons">
+                          <button onClick={saveEdit}>Save</button>
+                          <button onClick={cancelEditing}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span 
+                        className="status-badge editable-field"
+                        style={{ backgroundColor: getStatusColor(selectedContact.status) }}
+                        onDoubleClick={() => startEditing('status', selectedContact.id, selectedContact.status)}
+                      >
+                        {selectedContact.status}
+                      </span>
+                    )}
                   </div>
                   <div className="info-item">
                     <label>Owner:</label>
@@ -332,6 +551,20 @@ function App() {
                 <h3>Touchpoints ({selectedContact.touchpoints.length})</h3>
                 
                 <div className="add-touchpoint">
+                  <div className="touchpoint-source-selector">
+                    <label>Source:</label>
+                    <select
+                      value={touchpointSource}
+                      onChange={(e) => setTouchpointSource(e.target.value as any)}
+                    >
+                      <option value="MANUAL">✏️ Manual</option>
+                      <option value="EMAIL">📧 Email</option>
+                      <option value="SMS">💬 SMS</option>
+                      <option value="PHONE">📞 Phone</option>
+                      <option value="MEETING">🤝 Meeting</option>
+                      <option value="AUTO">🤖 Auto</option>
+                    </select>
+                  </div>
                   <textarea
                     placeholder="Add a new touchpoint..."
                     value={touchpointNote}
@@ -349,10 +582,16 @@ function App() {
                 <div className="touchpoints-list">
                   {selectedContact.touchpoints.map((touchpoint) => (
                     <div key={touchpoint.id} className="touchpoint-item">
-                      <p>{touchpoint.note}</p>
-                      <span className="touchpoint-date">
-                        {formatDate(touchpoint.createdAt)}
-                      </span>
+                      <div className="touchpoint-header">
+                        <div className="touchpoint-source">
+                          <span className="source-icon">{getTouchpointSourceIcon(touchpoint.source)}</span>
+                          <span className="source-label">{getTouchpointSourceLabel(touchpoint.source)}</span>
+                        </div>
+                        <span className="touchpoint-date">
+                          {formatDate(touchpoint.createdAt)}
+                        </span>
+                      </div>
+                      <p className="touchpoint-note">{touchpoint.note}</p>
                     </div>
                   ))}
                 </div>
