@@ -28,7 +28,7 @@ interface Contact {
 interface Touchpoint {
   id: number;
   note: string;
-  source: 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'MEETING' | 'AUTO';
+  source: 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER';
   createdAt: string;
 }
 
@@ -69,7 +69,7 @@ function App() {
   });
 
   const [touchpointNote, setTouchpointNote] = useState('');
-  const [touchpointSource, setTouchpointSource] = useState<'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'MEETING' | 'AUTO'>('MANUAL');
+  const [touchpointSource, setTouchpointSource] = useState<'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER'>('MANUAL');
   
   // Inline editing state
   const [editingField, setEditingField] = useState<{field: string, contactId: number} | null>(null);
@@ -269,8 +269,9 @@ function App() {
       case 'EMAIL': return '📧';
       case 'SMS': return '💬';
       case 'PHONE': return '📞';
-      case 'MEETING': return '🤝';
-      case 'AUTO': return '🤖';
+      case 'IN_PERSON': return '🤝';
+      case 'EVENT': return '🎯';
+      case 'OTHER': return '🔧';
       default: return '✏️';
     }
   };
@@ -281,8 +282,9 @@ function App() {
       case 'EMAIL': return 'Email';
       case 'SMS': return 'SMS';
       case 'PHONE': return 'Phone';
-      case 'MEETING': return 'Meeting';
-      case 'AUTO': return 'Auto';
+      case 'IN_PERSON': return 'In Person';
+      case 'EVENT': return 'Event';
+      case 'OTHER': return 'Other';
       default: return 'Manual';
     }
   };
@@ -293,7 +295,7 @@ function App() {
       <div className="app-container">
         <div className="loading">
           <div className="spinner"></div>
-          <p>Loading Daveenci CRM...</p>
+          <p>Loading DaVeenci CRM...</p>
         </div>
       </div>
     );
@@ -321,7 +323,7 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <div className="logo-section">
-            <h1>🚀 Daveenci CRM</h1>
+            <h1>🚀 DaVeenci CRM</h1>
             <p>Welcome back, {user.name}!</p>
           </div>
           <div className="header-actions">
@@ -626,8 +628,9 @@ function App() {
                       <option value="EMAIL">📧 Email</option>
                       <option value="SMS">💬 SMS</option>
                       <option value="PHONE">📞 Phone</option>
-                      <option value="MEETING">🤝 Meeting</option>
-                      <option value="AUTO">🤖 Auto</option>
+                      <option value="IN_PERSON">🤝 In Person</option>
+                      <option value="EVENT">🎯 Event</option>
+                      <option value="OTHER">🔧 Other</option>
                     </select>
                   </div>
                   <textarea
@@ -648,12 +651,11 @@ function App() {
                   {selectedContact.touchpoints.map((touchpoint) => (
                     <div key={touchpoint.id} className="touchpoint-item">
                       <div className="touchpoint-header">
-                        <div className="touchpoint-source">
-                          <span className="source-icon">{getTouchpointSourceIcon(touchpoint.source)}</span>
-                          <span className="source-label">{getTouchpointSourceLabel(touchpoint.source)}</span>
-                        </div>
                         <span className="touchpoint-date">
                           {formatDate(touchpoint.createdAt)}
+                        </span>
+                        <span className="source-icon" title={getTouchpointSourceLabel(touchpoint.source)}>
+                          {getTouchpointSourceIcon(touchpoint.source)}
                         </span>
                       </div>
                       <p className="touchpoint-note">{touchpoint.note}</p>

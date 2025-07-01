@@ -67,8 +67,9 @@ enum TouchpointSource {
   EMAIL
   SMS
   PHONE
-  MEETING
-  AUTO
+  IN_PERSON
+  EVENT
+  OTHER
 
   @@map("touchpoint_source")
 }
