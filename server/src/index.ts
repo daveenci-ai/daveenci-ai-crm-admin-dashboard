@@ -10,6 +10,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Root endpoint - API info
+app.get('/', (req, res) => {
+  res.json({ 
+    name: 'Daveenci CRM API',
+    version: '1.0.0',
+    status: 'OK',
+    endpoints: {
+      health: '/api/health',
+      contacts: '/api/contacts',
+      users: '/api/users',
+      docs: 'https://github.com/daveenci-ai/daveenci-ai-crm-admin-dashboard'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Daveenci CRM API is running' });
