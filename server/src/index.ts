@@ -12,7 +12,7 @@ const app = express();
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.com'] 
+    ? ['https://crm.daveenci.ai', 'https://daveenci-ai-crm-admin-dashboard.vercel.app'] 
     : ['http://localhost:3000'],
   credentials: true
 }));
@@ -21,6 +21,29 @@ app.use(cookieParser());
 
 // Auth routes (unprotected)
 app.use('/api/auth', authRoutes);
+
+// Seed user endpoint (for production setup)
+app.post('/api/seed-user', async (req, res) => {
+  try {
+    const bcrypt = require('bcrypt');
+    const password = await bcrypt.hash('secret123', 10);
+
+    const user = await prisma.user.upsert({
+      where: { email: 'anton@daveenci.ai' },
+      update: {},
+      create: {
+        email: 'anton@daveenci.ai',
+        name: 'Anton Osipov',
+        password,
+      },
+    });
+
+    res.json({ message: 'User seeded successfully', user: { id: user.id, email: user.email, name: user.name } });
+  } catch (error) {
+    console.error('Seed user error:', error);
+    res.status(500).json({ error: 'Failed to seed user' });
+  }
+});
 
 // Root endpoint - API info
 app.get('/', (req, res) => {
