@@ -15,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
+  const API_BASE_URL = 'https://crm.daveenci.ai/api';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

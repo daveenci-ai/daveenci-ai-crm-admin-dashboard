@@ -13,9 +13,8 @@ const app = express();
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://crm.daveenci.ai', 
-        'https://daveenci-ai-crm-admin-dashboard.vercel.app',
-        'https://daveenci-ai-crm-admin-dashboard-4uq0.onrender.com'
+        'https://crm.daveenci.ai',
+        'https://daveenci-ai-crm-admin-dashboard-4uq0.onrender.com' // Temporary during migration
       ] 
     : ['http://localhost:3000'],
   credentials: true

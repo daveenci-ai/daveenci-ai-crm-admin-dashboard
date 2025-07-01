@@ -39,7 +39,7 @@ interface User {
   createdAt: string;
 }
 
-const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
+const API_BASE_URL = 'https://crm.daveenci.ai/api';
 
 function App() {
   // Authentication state

@@ -10,9 +10,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none' as const, // Allow cross-site cookies
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined // Share cookies across onrender.com subdomains
+  sameSite: 'lax' as const, // Changed back to lax for better compatibility
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  // Removed domain restriction to allow cookies to work properly
 };
 
 // LOGIN
@@ -37,12 +37,14 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
     
-    res.cookie('token', token, cookieOptions).json({
+    // Send token in response body instead of cookie for cross-domain compatibility
+    res.json({
       user: { 
         id: user.id, 
         email: user.email, 
         name: user.name 
-      }
+      },
+      token: token
     });
   } catch (error) {
     console.error('Login error:', error);
