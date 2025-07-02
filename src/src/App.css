@@ -912,7 +912,7 @@ body {
 
 /* Company Notes (Right Side) */
 .company-notes {
-  flex: 0 0 300px;
+  flex: 0 0 60%;
   min-width: 0;
   padding: 16px;
   background: #f8fafc;

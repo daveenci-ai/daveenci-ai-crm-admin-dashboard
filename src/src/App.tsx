@@ -1408,7 +1408,6 @@ function App() {
                           {/* Notes on the right side */}
                           {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
                             <div className="company-notes">
-                              <h4 className="notes-title">Notes</h4>
                               <p className="notes-text">{selectedContact.notes}</p>
                             </div>
                           )}
