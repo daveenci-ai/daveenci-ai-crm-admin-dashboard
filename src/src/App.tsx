@@ -317,6 +317,32 @@ function App() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const newContacts = contacts.filter(contact => new Date(contact.createdAt) >= sevenDaysAgo);
 
+  // Calculate 28-day growth for each stage
+  const twentyEightDaysAgo = new Date();
+  twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
+  
+  const newProspects28Days = contacts.filter(contact => 
+    contact.status === 'PROSPECT' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+  
+  const newLeads28Days = contacts.filter(contact => 
+    contact.status === 'LEAD' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+  
+  const newOpportunities28Days = contacts.filter(contact => 
+    contact.status === 'OPPORTUNITY' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+  
+  const newClients28Days = contacts.filter(contact => 
+    contact.status === 'CLIENT' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+
+  // Calculate growth percentages (dummy calculation for now since we don't have historical data)
+  const prospectGrowth = prospectCount > 0 ? Math.min(Math.round((newProspects28Days / prospectCount) * 100), 100) : 0;
+  const leadGrowth = leadCount > 0 ? Math.min(Math.round((newLeads28Days / leadCount) * 100), 100) : 0;
+  const opportunityGrowth = opportunityCount > 0 ? Math.min(Math.round((newOpportunities28Days / opportunityCount) * 100), 100) : 0;
+  const clientGrowth = clientCount > 0 ? Math.min(Math.round((newClients28Days / clientCount) * 100), 100) : 0;
+
   // Filter recent touchpoints to exclude those from new contacts
   const recentTouchpointsExcludingNew = recentTouchpoints.filter(touchpoint => 
     !newContacts.some(newContact => newContact.id === touchpoint.contact.id)
@@ -428,44 +454,55 @@ function App() {
                     <div className="funnel-icon">👥</div>
                     <div className="funnel-number">{prospectCount}</div>
                     <div className="funnel-label">Prospects</div>
+                    <div className="funnel-growth">
+                      <span className="growth-number">+{newProspects28Days}</span>
+                      <span className="growth-period">28 days</span>
+                      <span className="growth-percentage">+{prospectGrowth}%</span>
+                    </div>
                   </div>
-                  {leadCount > 0 && <div className="funnel-arrow">→</div>}
+                  <div className="funnel-arrow">→</div>
                 </div>
 
-                {leadCount > 0 && (
-                  <div className="funnel-stage leads" onClick={() => setCurrentView('contacts')}>
-                    <div className="funnel-content">
-                      <div className="funnel-icon">🎯</div>
-                      <div className="funnel-number">{leadCount}</div>
-                      <div className="funnel-label">Leads</div>
-                      <div className="funnel-conversion">{prospectToLeadRate}%</div>
+                <div className="funnel-stage leads" onClick={() => setCurrentView('contacts')}>
+                  <div className="funnel-content">
+                    <div className="funnel-icon">🎯</div>
+                    <div className="funnel-number">{leadCount}</div>
+                    <div className="funnel-label">Leads</div>
+                    <div className="funnel-growth">
+                      <span className="growth-number">+{newLeads28Days}</span>
+                      <span className="growth-period">28 days</span>
+                      <span className="growth-percentage">+{leadGrowth}%</span>
                     </div>
-                    {opportunityCount > 0 && <div className="funnel-arrow">→</div>}
                   </div>
-                )}
+                  <div className="funnel-arrow">→</div>
+                </div>
 
-                {opportunityCount > 0 && (
-                  <div className="funnel-stage opportunities" onClick={() => setCurrentView('contacts')}>
-                    <div className="funnel-content">
-                      <div className="funnel-icon">⚡</div>
-                      <div className="funnel-number">{opportunityCount}</div>
-                      <div className="funnel-label">Opportunities</div>
-                      <div className="funnel-conversion">{leadToOpportunityRate}%</div>
+                <div className="funnel-stage opportunities" onClick={() => setCurrentView('contacts')}>
+                  <div className="funnel-content">
+                    <div className="funnel-icon">⚡</div>
+                    <div className="funnel-number">{opportunityCount}</div>
+                    <div className="funnel-label">Opportunities</div>
+                    <div className="funnel-growth">
+                      <span className="growth-number">+{newOpportunities28Days}</span>
+                      <span className="growth-period">28 days</span>
+                      <span className="growth-percentage">+{opportunityGrowth}%</span>
                     </div>
-                    {clientCount > 0 && <div className="funnel-arrow">→</div>}
                   </div>
-                )}
+                  <div className="funnel-arrow">→</div>
+                </div>
 
-                {clientCount > 0 && (
-                  <div className="funnel-stage clients" onClick={() => setCurrentView('contacts')}>
-                    <div className="funnel-content">
-                      <div className="funnel-icon">👑</div>
-                      <div className="funnel-number">{clientCount}</div>
-                      <div className="funnel-label">Clients</div>
-                      <div className="funnel-conversion">{opportunityToClientRate}%</div>
+                <div className="funnel-stage clients" onClick={() => setCurrentView('contacts')}>
+                  <div className="funnel-content">
+                    <div className="funnel-icon">👑</div>
+                    <div className="funnel-number">{clientCount}</div>
+                    <div className="funnel-label">Clients</div>
+                    <div className="funnel-growth">
+                      <span className="growth-number">+{newClients28Days}</span>
+                      <span className="growth-period">28 days</span>
+                      <span className="growth-percentage">+{clientGrowth}%</span>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
@@ -591,83 +628,7 @@ function App() {
               </div>
             </div>
 
-            <div className="dashboard-row">
-              {/* Recent Activities Section */}
-              <div className="dashboard-section recent-activities-section">
-                <div className="section-header">
-                  <h2>Recent Activities</h2>
-                  <span className="section-subtitle">Last 7 Days</span>
-                </div>
-                <div className="activities-container">
-                  {recentTouchpoints.slice(0, 5).length === 0 ? (
-                    <div className="activities-empty">
-                      <p>No recent activities</p>
-                      <span>Activities will appear here as you interact with contacts</span>
-                    </div>
-                  ) : (
-                    recentTouchpoints.slice(0, 5).map((touchpoint) => (
-                      <div key={touchpoint.id} className="activity-item-small">
-                        <div 
-                          className="activity-icon-small"
-                          style={{ backgroundColor: getTouchpointIconColor(touchpoint.source) }}
-                        >
-                          {getTouchpointIcon(touchpoint.source)}
-                        </div>
-                        <div className="activity-content-small">
-                          <div className="activity-title-small">{getActivityTitle(touchpoint)}</div>
-                          <div className="activity-time-small">{formatActivityTime(touchpoint.createdAt)}</div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
 
-              {/* Upcoming Meetings Section */}
-              <div className="dashboard-section upcoming-section">
-                <div className="section-header">
-                  <h2>Upcoming</h2>
-                  <span className="section-subtitle">Meetings Scheduled</span>
-                </div>
-                <div className="upcoming-container">
-                  <div className="upcoming-item">
-                    <div className="meeting-date">
-                      <div className="date-day">23</div>
-                      <div className="date-month">Jan</div>
-                    </div>
-                    <div className="meeting-details">
-                      <div className="meeting-name">Sarah Johnson</div>
-                      <div className="meeting-location">📍 Conference Room A</div>
-                      <div className="meeting-time">⏰ 2:00 PM - 3:00 PM</div>
-                    </div>
-                  </div>
-                  
-                  <div className="upcoming-item">
-                    <div className="meeting-date">
-                      <div className="date-day">24</div>
-                      <div className="date-month">Jan</div>
-                    </div>
-                    <div className="meeting-details">
-                      <div className="meeting-name">Michael Chen</div>
-                      <div className="meeting-location">📍 Virtual Meeting</div>
-                      <div className="meeting-time">⏰ 10:00 AM - 11:00 AM</div>
-                    </div>
-                  </div>
-
-                  <div className="upcoming-item">
-                    <div className="meeting-date">
-                      <div className="date-day">25</div>
-                      <div className="date-month">Jan</div>
-                    </div>
-                    <div className="meeting-details">
-                      <div className="meeting-name">Emily Rodriguez</div>
-                      <div className="meeting-location">📍 Office Building</div>
-                      <div className="meeting-time">⏰ 3:30 PM - 4:30 PM</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Breakdown Section */}
             <div className="dashboard-section breakdown-section">
