@@ -625,13 +625,28 @@ body {
   font-size: 20px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
-.contact-info-large p {
+.contact-inline-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-email-row,
+.contact-phone-row {
   font-size: 14px;
+}
+
+.primary-contact {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.secondary-contact {
   color: #64748b;
-  margin-bottom: 8px;
+  font-weight: 400;
 }
 
 .status-badge-large {
@@ -642,10 +657,13 @@ body {
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
 
 .contact-actions {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
 }
 
@@ -678,15 +696,80 @@ body {
   background: #fecaca;
 }
 
-.contact-info-section {
+/* New Contact Details Layout */
+.contact-basic-info {
   margin-bottom: 24px;
 }
 
-.contact-info-section h3 {
-  font-size: 16px;
+.company-section {
+  margin-bottom: 16px;
+}
+
+.company-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.industry-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.website-link {
+  margin-top: 4px;
+}
+
+.website-link a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.website-link a:hover {
+  text-decoration: underline;
+}
+
+.address-section {
+  margin-bottom: 16px;
+}
+
+.address-section h4 {
+  font-size: 14px;
   font-weight: 600;
   color: #1e293b;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
+}
+
+.address-section p {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.crm-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.source-tag {
+  color: #64748b;
+  background: #f8fafc;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.created-date {
+  color: #64748b;
 }
 
 .info-grid {
@@ -868,6 +951,36 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.touchpoint-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.touchpoint-item:hover .touchpoint-actions {
+  opacity: 1;
+}
+
+.touchpoint-edit-btn,
+.touchpoint-delete-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.touchpoint-edit-btn:hover {
+  background: #f1f5f9;
+}
+
+.touchpoint-delete-btn:hover {
+  background: #fee2e2;
 }
 
 .touchpoint-type {

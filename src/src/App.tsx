@@ -1040,15 +1040,28 @@ function App() {
                       </div>
                       <div className="contact-info-large">
                         <h2>{selectedContact.name}</h2>
-                        <p>{selectedContact.primaryEmail || selectedContact.email}</p>
+                        <div className="contact-inline-info">
+                          <div className="contact-email-row">
+                            <span className="primary-contact">{selectedContact.primaryEmail || selectedContact.email}</span>
+                            {selectedContact.secondaryEmail && (
+                              <span className="secondary-contact"> | {selectedContact.secondaryEmail}</span>
+                            )}
+                          </div>
+                          <div className="contact-phone-row">
+                            <span className="primary-contact">{selectedContact.primaryPhone || selectedContact.phone || 'No phone'}</span>
+                            {selectedContact.secondaryPhone && (
+                              <span className="secondary-contact"> | {selectedContact.secondaryPhone}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="contact-actions">
                         <span 
                           className="status-badge-large"
                           style={{ backgroundColor: getStatusColor(selectedContact.status) }}
                         >
                           {getStatusLabel(selectedContact.status)}
                         </span>
-                      </div>
-                      <div className="contact-actions">
                         <button className="edit-btn">✏️ Edit</button>
                         <button 
                           className="delete-btn"
@@ -1060,106 +1073,51 @@ function App() {
                     </div>
 
                     <div className="contact-details-content">
-                      <div className="contact-info-section">
-                        <h3>Contact Information</h3>
-                        
-                        {/* Email Section */}
-                        <div className="info-subsection">
-                          <h4>Email Addresses</h4>
-                          <div className="info-grid">
-                            <div className="info-item">
-                              <label>Primary Email:</label>
-                              <span>{selectedContact.primaryEmail || selectedContact.email}</span>
-                            </div>
-                            {selectedContact.secondaryEmail && (
-                              <div className="info-item">
-                                <label>Secondary Email:</label>
-                                <span>{selectedContact.secondaryEmail}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Phone Section */}
-                        <div className="info-subsection">
-                          <h4>Phone Numbers</h4>
-                          <div className="info-grid">
-                            <div className="info-item">
-                              <label>Primary Phone:</label>
-                              <span>{selectedContact.primaryPhone || selectedContact.phone || 'Not provided'}</span>
-                            </div>
-                            {selectedContact.secondaryPhone && (
-                              <div className="info-item">
-                                <label>Secondary Phone:</label>
-                                <span>{selectedContact.secondaryPhone}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Business Information */}
-                        <div className="info-subsection">
-                          <h4>Business Information</h4>
-                          <div className="info-grid">
-                            <div className="info-item">
-                              <label>Company:</label>
-                              <span>{selectedContact.company || 'Not provided'}</span>
-                            </div>
+                      {/* Company and Address */}
+                      <div className="contact-basic-info">
+                        {selectedContact.company && (
+                          <div className="company-section">
+                            <h3>{selectedContact.company}</h3>
                             {selectedContact.industry && (
-                              <div className="info-item">
-                                <label>Industry:</label>
-                                <span>{selectedContact.industry}</span>
-                              </div>
+                              <span className="industry-tag">{selectedContact.industry}</span>
                             )}
                             {selectedContact.website && (
-                              <div className="info-item">
-                                <label>Website:</label>
-                                <span>
-                                  <a href={selectedContact.website} target="_blank" rel="noopener noreferrer">
-                                    {selectedContact.website}
-                                  </a>
-                                </span>
+                              <div className="website-link">
+                                <a href={selectedContact.website.startsWith('http') ? selectedContact.website : `https://${selectedContact.website}`} target="_blank" rel="noopener noreferrer">
+                                  🌐 {selectedContact.website}
+                                </a>
                               </div>
                             )}
                           </div>
-                        </div>
-
-                        {/* Address */}
+                        )}
+                        
                         {selectedContact.address && (
-                          <div className="info-subsection">
-                            <h4>Address</h4>
-                            <div className="address-display">
-                              <p>{selectedContact.address}</p>
-                            </div>
+                          <div className="address-section">
+                            <h4>📍 Address</h4>
+                            <p>{selectedContact.address}</p>
                           </div>
                         )}
-
-                        {/* CRM Information */}
-                        <div className="info-subsection">
-                          <h4>CRM Information</h4>
-                          <div className="info-grid">
-                            <div className="info-item">
-                              <label>Source:</label>
-                              <span>{selectedContact.source || 'Not specified'}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Created:</label>
-                              <span>{formatDate(selectedContact.createdAt)}</span>
-                            </div>
-                          </div>
+                        
+                        <div className="crm-meta">
+                          {selectedContact.source && (
+                            <span className="source-tag">Source: {selectedContact.source}</span>
+                          )}
+                          <span className="created-date">Added: {formatDate(selectedContact.createdAt)}</span>
                         </div>
-
-                        {selectedContact.notes && (
-                          <div className="notes-section">
-                            <label>Notes:</label>
-                            <p>{selectedContact.notes}</p>
-                          </div>
-                        )}
                       </div>
 
+                      {/* Notes Section */}
+                      {selectedContact.notes && (
+                        <div className="notes-section">
+                          <h4>📝 Notes</h4>
+                          <p>{selectedContact.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Touchpoints Section */}
                       <div className="touchpoints-section">
                         <div className="touchpoints-header">
-                          <h3>Touchpoints ({selectedContact.touchpoints.length})</h3>
+                          <h3>💬 Touchpoints ({selectedContact.touchpoints.length})</h3>
                           <button className="add-touchpoint-btn">+ Add Touchpoint</button>
                         </div>
                         
@@ -1186,6 +1144,10 @@ function App() {
                                     <span className="touchpoint-time">
                                       {formatActivityTime(touchpoint.createdAt)}
                                     </span>
+                                    <div className="touchpoint-actions">
+                                      <button className="touchpoint-edit-btn" title="Edit touchpoint">✏️</button>
+                                      <button className="touchpoint-delete-btn" title="Delete touchpoint">🗑️</button>
+                                    </div>
                                   </div>
                                   <p className="touchpoint-note">{touchpoint.note}</p>
                                 </div>
