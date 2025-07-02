@@ -18,7 +18,7 @@ interface Contact {
   website?: string;
   address?: string;
   source?: string;
-  status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT';
+  status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT' | 'UNQUALIFIED' | 'CHURNED';
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +50,7 @@ interface RecentTouchpoint {
     name: string;
     primaryEmail: string;
     company?: string;
-    status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT';
+    status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT' | 'UNQUALIFIED' | 'CHURNED';
   };
 }
 
@@ -272,20 +272,24 @@ function App() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PROSPECT': return '#6366f1'; // Indigo
-      case 'LEAD': return '#f59e0b'; // Amber
-      case 'OPPORTUNITY': return '#10b981'; // Emerald
-      case 'CLIENT': return '#8b5cf6'; // Violet
+      case 'PROSPECT': return '#5B8DEF';      // Blue - Trust, potential
+      case 'LEAD': return '#F4C430';          // Yellow - Interest, caution
+      case 'OPPORTUNITY': return '#FFA14E';   // Orange - Action, momentum
+      case 'CLIENT': return '#4CAF50';        // Green - Success, stability
+      case 'CHURNED': return '#D9534F';       // Soft Red - Attention, loss
+      case 'UNQUALIFIED': return '#B0BEC5';   // Muted Gray - Dormant, not a fit
       default: return '#6b7280'; // Gray
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'PROSPECT': return 'New';
-      case 'LEAD': return 'Contacted';
-      case 'OPPORTUNITY': return 'Qualified';
-      case 'CLIENT': return 'Converted';
+      case 'PROSPECT': return 'New Prospect';
+      case 'LEAD': return 'Contacted Lead';
+      case 'OPPORTUNITY': return 'Qualified Opportunity';
+      case 'CLIENT': return 'Converted Client';
+      case 'CHURNED': return 'Churned Client';
+      case 'UNQUALIFIED': return 'Unqualified Lead';
       default: return status;
     }
   };
@@ -385,6 +389,8 @@ function App() {
   const leadCount = contacts.filter(c => c.status === 'LEAD').length;
   const opportunityCount = contacts.filter(c => c.status === 'OPPORTUNITY').length;
   const clientCount = contacts.filter(c => c.status === 'CLIENT').length;
+  const unqualifiedCount = contacts.filter(c => c.status === 'UNQUALIFIED').length;
+  const churnedCount = contacts.filter(c => c.status === 'CHURNED').length;
 
   // Calculate conversion rates between stages
   const prospectToLeadRate = prospectCount > 0 ? Math.round((leadCount / (prospectCount + leadCount)) * 100) : 0;
@@ -416,11 +422,21 @@ function App() {
     contact.status === 'CLIENT' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
 
+  const newUnqualified28Days = contacts.filter(contact => 
+    contact.status === 'UNQUALIFIED' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+
+  const newChurned28Days = contacts.filter(contact => 
+    contact.status === 'CHURNED' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+
   // Calculate growth percentages (dummy calculation for now since we don't have historical data)
   const prospectGrowth = prospectCount > 0 ? Math.min(Math.round((newProspects28Days / prospectCount) * 100), 100) : 0;
   const leadGrowth = leadCount > 0 ? Math.min(Math.round((newLeads28Days / leadCount) * 100), 100) : 0;
   const opportunityGrowth = opportunityCount > 0 ? Math.min(Math.round((newOpportunities28Days / opportunityCount) * 100), 100) : 0;
   const clientGrowth = clientCount > 0 ? Math.min(Math.round((newClients28Days / clientCount) * 100), 100) : 0;
+  const unqualifiedGrowth = unqualifiedCount > 0 ? Math.min(Math.round((newUnqualified28Days / unqualifiedCount) * 100), 100) : 0;
+  const churnedGrowth = churnedCount > 0 ? Math.min(Math.round((newChurned28Days / churnedCount) * 100), 100) : 0;
 
   // Filter recent touchpoints to exclude those from new contacts
   const recentTouchpointsExcludingNew = recentTouchpoints.filter(touchpoint => 
@@ -525,56 +541,81 @@ function App() {
           <div className="dashboard">
 
             {/* Sales Funnel Section */}
-            <div className="dashboard-section">
-              <div className="funnel-container">
-                <div className="funnel-stage prospects" onClick={() => setCurrentView('contacts')}>
-                  <div className="funnel-content">
-                    <div className="funnel-number">{prospectCount}</div>
-                    <div className="funnel-label">Prospects</div>
-                    <div className="funnel-growth">
-                      <span className="growth-number">+{newProspects28Days}</span>
-                      <span className="growth-period">28 days</span>
-                      <span className="growth-percentage">+{prospectGrowth}%</span>
-                    </div>
+            <div className="sales-cards-container">
+              <div className="sales-card prospects" onClick={() => setCurrentView('contacts')}>
+                <div className="card-icon">🔵</div>
+                <div className="card-content">
+                  <div className="card-number">{prospectCount}</div>
+                  <div className="card-label">Prospects</div>
+                  <div className="card-growth">
+                    <span className="growth-number">+{newProspects28Days}</span>
+                    <span className="growth-period">28 days</span>
+                    <span className="growth-percentage">+{prospectGrowth}%</span>
                   </div>
-                  <div className="funnel-arrow">→</div>
                 </div>
+              </div>
 
-                <div className="funnel-stage leads" onClick={() => setCurrentView('contacts')}>
-                  <div className="funnel-content">
-                    <div className="funnel-number">{leadCount}</div>
-                    <div className="funnel-label">Leads</div>
-                    <div className="funnel-growth">
-                      <span className="growth-number">+{newLeads28Days}</span>
-                      <span className="growth-period">28 days</span>
-                      <span className="growth-percentage">+{leadGrowth}%</span>
-                    </div>
+              <div className="sales-card leads" onClick={() => setCurrentView('contacts')}>
+                <div className="card-icon">🟡</div>
+                <div className="card-content">
+                  <div className="card-number">{leadCount}</div>
+                  <div className="card-label">Leads</div>
+                  <div className="card-growth">
+                    <span className="growth-number">+{newLeads28Days}</span>
+                    <span className="growth-period">28 days</span>
+                    <span className="growth-percentage">+{leadGrowth}%</span>
                   </div>
-                  <div className="funnel-arrow">→</div>
                 </div>
+              </div>
 
-                <div className="funnel-stage opportunities" onClick={() => setCurrentView('contacts')}>
-                  <div className="funnel-content">
-                    <div className="funnel-number">{opportunityCount}</div>
-                    <div className="funnel-label">Opportunities</div>
-                    <div className="funnel-growth">
-                      <span className="growth-number">+{newOpportunities28Days}</span>
-                      <span className="growth-period">28 days</span>
-                      <span className="growth-percentage">+{opportunityGrowth}%</span>
-                    </div>
+              <div className="sales-card opportunities" onClick={() => setCurrentView('contacts')}>
+                <div className="card-icon">🟠</div>
+                <div className="card-content">
+                  <div className="card-number">{opportunityCount}</div>
+                  <div className="card-label">Opportunities</div>
+                  <div className="card-growth">
+                    <span className="growth-number">+{newOpportunities28Days}</span>
+                    <span className="growth-period">28 days</span>
+                    <span className="growth-percentage">+{opportunityGrowth}%</span>
                   </div>
-                  <div className="funnel-arrow">→</div>
                 </div>
+              </div>
 
-                <div className="funnel-stage clients" onClick={() => setCurrentView('contacts')}>
-                  <div className="funnel-content">
-                    <div className="funnel-number">{clientCount}</div>
-                    <div className="funnel-label">Clients</div>
-                    <div className="funnel-growth">
-                      <span className="growth-number">+{newClients28Days}</span>
-                      <span className="growth-period">28 days</span>
-                      <span className="growth-percentage">+{clientGrowth}%</span>
-                    </div>
+              <div className="sales-card clients" onClick={() => setCurrentView('contacts')}>
+                <div className="card-icon">🟢</div>
+                <div className="card-content">
+                  <div className="card-number">{clientCount}</div>
+                  <div className="card-label">Clients</div>
+                  <div className="card-growth">
+                    <span className="growth-number">+{newClients28Days}</span>
+                    <span className="growth-period">28 days</span>
+                    <span className="growth-percentage">+{clientGrowth}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sales-card unqualified" onClick={() => setCurrentView('contacts')}>
+                <div className="card-icon">⚪️</div>
+                <div className="card-content">
+                  <div className="card-number">{unqualifiedCount}</div>
+                  <div className="card-label">Unqualified</div>
+                  <div className="card-growth">
+                    <span className="growth-number">+{newUnqualified28Days}</span>
+                    <span className="growth-period">28 days</span>
+                    <span className="growth-percentage">+{unqualifiedGrowth}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sales-card churned" onClick={() => setCurrentView('contacts')}>
+                <div className="card-icon">🔴</div>
+                <div className="card-content">
+                  <div className="card-number">{churnedCount}</div>
+                  <div className="card-label">Churned</div>
+                  <div className="card-growth">
+                    <span className="growth-number">+{newChurned28Days}</span>
+                    <span className="growth-period">28 days</span>
+                    <span className="growth-percentage">+{churnedGrowth}%</span>
                   </div>
                 </div>
               </div>
@@ -828,6 +869,8 @@ function App() {
                   <option value="LEAD">Leads</option>
                   <option value="OPPORTUNITY">Opportunities</option>
                   <option value="CLIENT">Clients</option>
+                  <option value="UNQUALIFIED">Unqualified</option>
+                  <option value="CHURNED">Churned</option>
                 </select>
                 <select 
                   value={industryFilter} 
@@ -1298,6 +1341,8 @@ function App() {
                         <option value="LEAD">Contacted Lead</option>
                         <option value="OPPORTUNITY">Qualified Opportunity</option>
                         <option value="CLIENT">Converted Client</option>
+                        <option value="UNQUALIFIED">Unqualified Lead</option>
+                        <option value="CHURNED">Churned Client</option>
                       </select>
                     </div>
 
