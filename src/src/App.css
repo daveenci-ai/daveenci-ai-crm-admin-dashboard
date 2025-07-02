@@ -662,38 +662,41 @@ body {
 
 .contact-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
 }
 
-.edit-btn, .delete-btn {
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+.edit-icon-btn, .delete-icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.edit-btn {
-  background: white;
-  color: #64748b;
+.edit-icon-btn {
+  background: #fef3c7;
+  color: #d97706;
 }
 
-.edit-btn:hover {
-  background: #f8fafc;
+.edit-icon-btn:hover {
+  background: #fde68a;
+  transform: scale(1.1);
 }
 
-.delete-btn {
+.delete-icon-btn {
   background: #fee2e2;
   color: #dc2626;
-  border-color: #fecaca;
 }
 
-.delete-btn:hover {
+.delete-icon-btn:hover {
   background: #fecaca;
+  transform: scale(1.1);
 }
 
 /* New Contact Details Layout */

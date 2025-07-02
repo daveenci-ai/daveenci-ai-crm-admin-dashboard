@@ -1191,6 +1191,13 @@ function App() {
                         </div>
                       </div>
                       <div className="contact-actions">
+                        <button 
+                          className="edit-icon-btn"
+                          onClick={() => openEditForm(selectedContact)}
+                          title="Edit contact"
+                        >
+                          ✏️
+                        </button>
                         <span 
                           className="status-badge-large"
                           style={{ backgroundColor: getStatusColor(selectedContact.status) }}
@@ -1198,16 +1205,11 @@ function App() {
                           {getStatusLabel(selectedContact.status)}
                         </span>
                         <button 
-                          className="edit-btn"
-                          onClick={() => openEditForm(selectedContact)}
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button 
-                          className="delete-btn"
+                          className="delete-icon-btn"
                           onClick={() => deleteContact(selectedContact.id)}
+                          title="Delete contact"
                         >
-                          🗑️ Delete
+                          🗑️
                         </button>
                       </div>
                     </div>
