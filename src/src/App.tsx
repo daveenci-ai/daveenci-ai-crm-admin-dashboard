@@ -83,8 +83,9 @@ function App() {
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All Types');
-  const [industryFilter, setIndustryFilter] = useState<string>('All Industries');
+  const [ownerFilter, setOwnerFilter] = useState<string>('All Owners');
   const [timeFilter, setTimeFilter] = useState<string>('All Time');
+  const [recentActivityFilter, setRecentActivityFilter] = useState<string>('All Activity');
   
   // Dashboard breakdown filters
   const [breakdownType, setBreakdownType] = useState<string>('Industry');
@@ -284,12 +285,12 @@ function App() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'PROSPECT': return 'New Prospect';
-      case 'LEAD': return 'Contacted Lead';
-      case 'OPPORTUNITY': return 'Qualified Opportunity';
-      case 'CLIENT': return 'Converted Client';
-      case 'CHURNED': return 'Churned Client';
-      case 'UNQUALIFIED': return 'Unqualified Lead';
+      case 'PROSPECT': return 'Prospect';
+      case 'LEAD': return 'Lead';
+      case 'OPPORTUNITY': return 'Opportunity';
+      case 'CLIENT': return 'Client';
+      case 'CHURNED': return 'Churned';
+      case 'UNQUALIFIED': return 'Unqualified';
       default: return status;
     }
   };
@@ -373,6 +374,35 @@ function App() {
     return touchpoint.note;
   };
 
+  const getLastTouchpoint = (contact: Contact) => {
+    if (!contact.touchpoints || contact.touchpoints.length === 0) {
+      return null;
+    }
+    
+    // Return the most recent touchpoint
+    return contact.touchpoints.reduce((latest, current) => 
+      new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+    );
+  };
+
+  const formatLastTouchpoint = (touchpoint: Touchpoint | null) => {
+    if (!touchpoint) {
+      return { date: 'No activity', text: '' };
+    }
+    
+    const date = new Date(touchpoint.createdAt);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+    
+    const shortText = touchpoint.note.length > 30 ? 
+      touchpoint.note.substring(0, 30) + '...' : 
+      touchpoint.note;
+    
+    return { date: formattedDate, text: shortText };
+  };
+
   // Calculate dashboard stats
   const totalLeads = contacts.length;
   const thisMonthLeads = contacts.filter(contact => {
@@ -449,13 +479,73 @@ function App() {
       (contact.primaryEmail || contact.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.secondaryEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.address?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All Types' || contact.status === statusFilter;
-    const matchesIndustry = industryFilter === 'All Industries' || contact.industry === industryFilter;
     
-    return matchesSearch && matchesStatus && matchesIndustry;
+    const matchesStatus = statusFilter === 'All Types' || contact.status === statusFilter;
+    
+    const matchesOwner = ownerFilter === 'All Owners' || contact.user.name === ownerFilter;
+    
+    // Time filter based on contact creation date
+    let matchesTimeFilter = true;
+    if (timeFilter !== 'All Time') {
+      const contactDate = new Date(contact.createdAt);
+      const now = new Date();
+      const diffDays = Math.floor((now.getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      switch (timeFilter) {
+        case 'Last Week':
+          matchesTimeFilter = diffDays <= 7;
+          break;
+        case 'Last 28 Days':
+          matchesTimeFilter = diffDays <= 28;
+          break;
+        case 'Last 6 Months':
+          matchesTimeFilter = diffDays <= 180;
+          break;
+        case 'Last 12 Months':
+          matchesTimeFilter = diffDays <= 365;
+          break;
+      }
+    }
+    
+    // Recent Activity filter based on latest touchpoint
+    let matchesActivityFilter = true;
+    if (recentActivityFilter !== 'All Activity') {
+      const latestTouchpoint = contact.touchpoints?.length > 0 ? 
+        contact.touchpoints.reduce((latest, current) => 
+          new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+        ) : null;
+      
+      if (latestTouchpoint) {
+        const touchpointDate = new Date(latestTouchpoint.createdAt);
+        const now = new Date();
+        const diffDays = Math.floor((now.getTime() - touchpointDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        switch (recentActivityFilter) {
+          case 'Last Week':
+            matchesActivityFilter = diffDays <= 7;
+            break;
+          case 'Last 28 Days':
+            matchesActivityFilter = diffDays <= 28;
+            break;
+          case 'Last 6 Months':
+            matchesActivityFilter = diffDays <= 180;
+            break;
+          case 'Last 12 Months':
+            matchesActivityFilter = diffDays <= 365;
+            break;
+          case 'No Activity':
+            matchesActivityFilter = false;
+            break;
+        }
+      } else {
+        // No touchpoints
+        matchesActivityFilter = recentActivityFilter === 'No Activity';
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesOwner && matchesTimeFilter && matchesActivityFilter;
   });
 
   // Show loading while checking authentication
@@ -488,10 +578,9 @@ function App() {
       {/* Top Navigation */}
       <div className="top-navigation">
         <div className="logo">
-          <div className="logo-icon">📊</div>
           <div className="logo-text">
-            <h2>Daveenci</h2>
-            <p>CRM System</p>
+            <h2>DaVeenci</h2>
+            <p>Smart CRM System</p>
           </div>
         </div>
         <div className="nav-links">
@@ -522,19 +611,19 @@ function App() {
         </div>
         <div className="user-actions">
           <button 
+            className="nav-action-btn add-contact-btn"
+            onClick={() => setShowCreateForm(true)}
+          >
+            ➕ Add Contact
+          </button>
+          <button 
             className="nav-action-btn export-btn"
             onClick={exportContacts}
             title="Export filtered contacts to CSV file"
           >
             📄 Export CSV ({filteredContacts.length})
           </button>
-          <button 
-            className="nav-action-btn add-contact-btn"
-            onClick={() => setShowCreateForm(true)}
-          >
-            ➕ Add Contact
-          </button>
-          <button className="logout-btn" onClick={handleLogout}>
+          <button className="nav-action-btn logout-btn" onClick={handleLogout}>
             Logout
           </button>
         </div>
@@ -816,54 +905,60 @@ function App() {
 
 
             <div className="contacts-controls">
-              <div className="search-box">
-                <input
-                  type="text"
-                  placeholder="Search contacts by name, email, company, industry, website, or address..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="filters">
-                <select 
-                  value={statusFilter} 
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option>All Types</option>
-                  <option value="PROSPECT">Prospects</option>
-                  <option value="LEAD">Leads</option>
-                  <option value="OPPORTUNITY">Opportunities</option>
-                  <option value="CLIENT">Clients</option>
-                  <option value="UNQUALIFIED">Unqualified</option>
-                  <option value="CHURNED">Churned</option>
-                </select>
-                <select 
-                  value={industryFilter} 
-                  onChange={(e) => setIndustryFilter(e.target.value)}
-                >
-                  <option>All Industries</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Education">Education</option>
-                  <option value="Construction">Construction</option>
-                  <option value="Manufacturing">Manufacturing</option>
-                  <option value="Retail">Retail</option>
-                  <option value="Consulting">Consulting</option>
-                  <option value="Real Estate">Real Estate</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Other">Other</option>
-                </select>
-                <select 
-                  value={timeFilter} 
-                  onChange={(e) => setTimeFilter(e.target.value)}
-                >
-                  <option>All Time</option>
-                  <option value="Last Week">Last Week</option>
-                  <option value="Last 28 Days">Last 28 Days</option>
-                  <option value="Last 6 Months">Last 6 Months</option>
-                  <option value="Last 12 Months">Last 12 Months</option>
-                </select>
+              <div className="controls-split">
+                <div className="search-section">
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search contacts by name, email, company..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="filters-section">
+                  <select 
+                    value={statusFilter} 
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option>All Types</option>
+                    <option value="PROSPECT">Prospects</option>
+                    <option value="LEAD">Leads</option>
+                    <option value="OPPORTUNITY">Opportunities</option>
+                    <option value="CLIENT">Clients</option>
+                    <option value="UNQUALIFIED">Unqualified</option>
+                    <option value="CHURNED">Churned</option>
+                  </select>
+                  <select 
+                    value={ownerFilter} 
+                    onChange={(e) => setOwnerFilter(e.target.value)}
+                  >
+                    <option>All Owners</option>
+                    {Array.from(new Set(contacts.map(contact => contact.user.name))).map(owner => (
+                      <option key={owner} value={owner}>{owner}</option>
+                    ))}
+                  </select>
+                  <select 
+                    value={timeFilter} 
+                    onChange={(e) => setTimeFilter(e.target.value)}
+                  >
+                    <option>All Time</option>
+                    <option value="Last Week">Last Week</option>
+                    <option value="Last 28 Days">Last 28 Days</option>
+                    <option value="Last 6 Months">Last 6 Months</option>
+                    <option value="Last 12 Months">Last 12 Months</option>
+                  </select>
+                  <select 
+                    value={recentActivityFilter} 
+                    onChange={(e) => setRecentActivityFilter(e.target.value)}
+                  >
+                    <option>All Activity</option>
+                    <option value="Last Week">Active Last Week</option>
+                    <option value="Last 28 Days">Active Last 28 Days</option>
+                    <option value="Last 6 Months">Active Last 6 Months</option>
+                    <option value="Last 12 Months">Active Last 12 Months</option>
+                    <option value="No Activity">No Activity</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -874,49 +969,53 @@ function App() {
                   <table>
                     <thead>
                       <tr>
-                        <th>Contact</th>
-                        <th>Company</th>
                         <th>Status</th>
-                        <th>Industry</th>
-                        <th>Added</th>
+                        <th>Contact</th>
+                        <th>Last Touchpoint</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredContacts.map(contact => (
-                        <tr 
-                          key={contact.id} 
-                          className={selectedContact?.id === contact.id ? 'selected' : ''}
-                          onClick={() => setSelectedContact(contact)}
-                        >
-                          <td>
-                            <div className="contact-info">
-                              <div className="contact-avatar">
-                                {contact.name.charAt(0).toUpperCase()}
+                      {filteredContacts.map(contact => {
+                        const lastTouchpoint = getLastTouchpoint(contact);
+                        const formattedTouchpoint = formatLastTouchpoint(lastTouchpoint);
+                        
+                        return (
+                          <tr 
+                            key={contact.id} 
+                            className={selectedContact?.id === contact.id ? 'selected' : ''}
+                            onClick={() => setSelectedContact(contact)}
+                          >
+                            <td>
+                              <span 
+                                className="status-badge"
+                                style={{ backgroundColor: getStatusColor(contact.status) }}
+                              >
+                                {getStatusLabel(contact.status)}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="contact-info">
+                                <div className="contact-avatar">
+                                  {contact.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="contact-details">
+                                  <div className="contact-name">{contact.name}</div>
+                                  <div className="contact-email">{contact.primaryEmail || contact.email}</div>
+                                  <div className="contact-phone">{contact.primaryPhone || contact.phone || 'No phone'}</div>
+                                </div>
                               </div>
-                              <div>
-                                <div className="contact-name">{contact.name}</div>
-                                <div className="contact-email">{contact.primaryEmail || contact.email}</div>
+                            </td>
+                            <td>
+                              <div className="touchpoint-info">
+                                <div className="touchpoint-date">{formattedTouchpoint.date}</div>
+                                {formattedTouchpoint.text && (
+                                  <div className="touchpoint-text">{formattedTouchpoint.text}</div>
+                                )}
                               </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div className="company-info">
-                              <span className="company-icon">🏢</span>
-                              {contact.company || 'N/A'}
-                            </div>
-                          </td>
-                          <td>
-                            <span 
-                              className="status-badge"
-                              style={{ backgroundColor: getStatusColor(contact.status) }}
-                            >
-                              {getStatusLabel(contact.status)}
-                            </span>
-                          </td>
-                          <td>{contact.industry || 'Not specified'}</td>
-                          <td>📅 {formatDate(contact.createdAt)}</td>
-                        </tr>
-                      ))}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
 
