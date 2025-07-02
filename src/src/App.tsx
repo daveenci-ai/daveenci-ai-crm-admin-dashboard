@@ -521,9 +521,71 @@ function App() {
           </button>
         </div>
         <div className="user-actions">
+          <button 
+            className="nav-action-btn export-btn"
+            onClick={exportContacts}
+            title="Export filtered contacts to CSV file"
+          >
+            📄 Export CSV ({filteredContacts.length})
+          </button>
+          <button 
+            className="nav-action-btn add-contact-btn"
+            onClick={() => setShowCreateForm(true)}
+          >
+            ➕ Add Contact
+          </button>
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
+        </div>
+      </div>
+
+      {/* Sales Pipeline Bar */}
+      <div className="pipeline-bar">
+        <div className="pipeline-container">
+          {/* Inactive Pipeline - Left Side */}
+          <div className="pipeline-group inactive-group">
+            <div className="pipeline-card churned" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{churnedCount}</div>
+              <div className="pipeline-label">Churned</div>
+              <div className="pipeline-growth">+{churnedGrowth}% 28d</div>
+            </div>
+            <div className="pipeline-card unqualified" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{unqualifiedCount}</div>
+              <div className="pipeline-label">Unqualified</div>
+              <div className="pipeline-growth">+{unqualifiedGrowth}% 28d</div>
+            </div>
+          </div>
+
+          {/* Pipeline Flow Arrows */}
+          <div className="pipeline-flow">
+            <div className="flow-arrow left">←</div>
+            <div className="pipeline-card prospects center-card" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{prospectCount}</div>
+              <div className="pipeline-label">Prospects</div>
+              <div className="pipeline-growth">+{prospectGrowth}% 28d</div>
+            </div>
+            <div className="flow-arrow right">→</div>
+          </div>
+
+          {/* Active Pipeline - Right Side */}
+          <div className="pipeline-group active-group">
+            <div className="pipeline-card leads" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{leadCount}</div>
+              <div className="pipeline-label">Leads</div>
+              <div className="pipeline-growth">+{leadGrowth}% 28d</div>
+            </div>
+            <div className="pipeline-card opportunities" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{opportunityCount}</div>
+              <div className="pipeline-label">Opportunities</div>
+              <div className="pipeline-growth">+{opportunityGrowth}% 28d</div>
+            </div>
+            <div className="pipeline-card clients" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{clientCount}</div>
+              <div className="pipeline-label">Clients</div>
+              <div className="pipeline-growth">+{clientGrowth}% 28d</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -539,87 +601,6 @@ function App() {
         {/* Dashboard View */}
         {currentView === 'dashboard' && (
           <div className="dashboard">
-
-            {/* Sales Funnel Section */}
-            <div className="sales-cards-container">
-              <div className="sales-card prospects" onClick={() => setCurrentView('contacts')}>
-                <div className="card-icon">🔵</div>
-                <div className="card-content">
-                  <div className="card-number">{prospectCount}</div>
-                  <div className="card-label">Prospects</div>
-                  <div className="card-growth">
-                    <span className="growth-number">+{newProspects28Days}</span>
-                    <span className="growth-period">28 days</span>
-                    <span className="growth-percentage">+{prospectGrowth}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="sales-card leads" onClick={() => setCurrentView('contacts')}>
-                <div className="card-icon">🟡</div>
-                <div className="card-content">
-                  <div className="card-number">{leadCount}</div>
-                  <div className="card-label">Leads</div>
-                  <div className="card-growth">
-                    <span className="growth-number">+{newLeads28Days}</span>
-                    <span className="growth-period">28 days</span>
-                    <span className="growth-percentage">+{leadGrowth}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="sales-card opportunities" onClick={() => setCurrentView('contacts')}>
-                <div className="card-icon">🟠</div>
-                <div className="card-content">
-                  <div className="card-number">{opportunityCount}</div>
-                  <div className="card-label">Opportunities</div>
-                  <div className="card-growth">
-                    <span className="growth-number">+{newOpportunities28Days}</span>
-                    <span className="growth-period">28 days</span>
-                    <span className="growth-percentage">+{opportunityGrowth}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="sales-card clients" onClick={() => setCurrentView('contacts')}>
-                <div className="card-icon">🟢</div>
-                <div className="card-content">
-                  <div className="card-number">{clientCount}</div>
-                  <div className="card-label">Clients</div>
-                  <div className="card-growth">
-                    <span className="growth-number">+{newClients28Days}</span>
-                    <span className="growth-period">28 days</span>
-                    <span className="growth-percentage">+{clientGrowth}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="sales-card unqualified" onClick={() => setCurrentView('contacts')}>
-                <div className="card-icon">⚪️</div>
-                <div className="card-content">
-                  <div className="card-number">{unqualifiedCount}</div>
-                  <div className="card-label">Unqualified</div>
-                  <div className="card-growth">
-                    <span className="growth-number">+{newUnqualified28Days}</span>
-                    <span className="growth-period">28 days</span>
-                    <span className="growth-percentage">+{unqualifiedGrowth}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="sales-card churned" onClick={() => setCurrentView('contacts')}>
-                <div className="card-icon">🔴</div>
-                <div className="card-content">
-                  <div className="card-number">{churnedCount}</div>
-                  <div className="card-label">Churned</div>
-                  <div className="card-growth">
-                    <span className="growth-number">+{newChurned28Days}</span>
-                    <span className="growth-period">28 days</span>
-                    <span className="growth-percentage">+{churnedGrowth}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Three Column Section */}
             <div className="dashboard-section">
@@ -832,23 +813,7 @@ function App() {
         {/* Contacts View */}
         {currentView === 'contacts' && (
           <div className="contacts-view">
-            <div className="contacts-header">
-              <div className="contacts-actions">
-                              <button 
-                className="export-btn"
-                onClick={exportContacts}
-                title="Export filtered contacts to CSV file"
-              >
-                📄 Export CSV ({filteredContacts.length})
-              </button>
-                <button 
-                  className="add-contact-btn"
-                  onClick={() => setShowCreateForm(true)}
-                >
-                  ➕ Add Contact
-                </button>
-              </div>
-            </div>
+
 
             <div className="contacts-controls">
               <div className="search-box">

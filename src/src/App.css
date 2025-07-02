@@ -93,7 +93,40 @@ body {
 .user-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+}
+
+.nav-action-btn {
+  padding: 6px 12px;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.nav-action-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.nav-action-btn.export-btn {
+  color: #0f766e;
+}
+
+.nav-action-btn.add-contact-btn {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.nav-action-btn.add-contact-btn:hover {
+  background: #5a67d8;
+  border-color: #5a67d8;
 }
 
 .logout-btn {
@@ -1149,114 +1182,129 @@ body {
   }
 }
 
-/* Sales Cards Styles */
-.sales-cards-container {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+/* Pipeline Bar Styles */
+.pipeline-bar {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px 24px;
+}
+
+.pipeline-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
   gap: 16px;
-  margin-bottom: 32px;
 }
 
-.sales-card {
+.pipeline-group {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
   align-items: center;
+}
+
+.inactive-group {
+  justify-content: flex-end;
+}
+
+.active-group {
+  justify-content: flex-start;
+}
+
+.pipeline-flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
   justify-content: center;
-  padding: 20px 16px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
 }
 
-.sales-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.sales-card.prospects {
-  border-left: 4px solid #5B8DEF;
-}
-
-.sales-card.leads {
-  border-left: 4px solid #F4C430;
-}
-
-.sales-card.opportunities {
-  border-left: 4px solid #FFA14E;
-}
-
-.sales-card.clients {
-  border-left: 4px solid #4CAF50;
-}
-
-.sales-card.unqualified {
-  border-left: 4px solid #B0BEC5;
-}
-
-.sales-card.churned {
-  border-left: 4px solid #D9534F;
-}
-
-.card-icon {
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-.card-content {
+.pipeline-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  width: 100%;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  backdrop-filter: blur(10px);
 }
 
-.card-number {
-  font-size: 28px;
+.pipeline-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pipeline-card.prospects {
+  border-bottom: 2px solid #5B8DEF;
+}
+
+.pipeline-card.leads {
+  border-bottom: 2px solid #F4C430;
+}
+
+.pipeline-card.opportunities {
+  border-bottom: 2px solid #FFA14E;
+}
+
+.pipeline-card.clients {
+  border-bottom: 2px solid #4CAF50;
+}
+
+.pipeline-card.unqualified {
+  border-bottom: 2px solid #B0BEC5;
+}
+
+.pipeline-card.churned {
+  border-bottom: 2px solid #D9534F;
+}
+
+.pipeline-card.center-card {
+  border: 2px solid #5B8DEF;
+  background: rgba(91, 141, 239, 0.1);
+}
+
+.pipeline-number {
+  font-size: 16px;
   font-weight: 700;
-  margin-bottom: 4px;
   line-height: 1;
   color: #1e293b;
+  margin-bottom: 2px;
 }
 
-.card-label {
-  font-size: 13px;
+.pipeline-label {
+  font-size: 8px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
   color: #64748b;
+  margin-bottom: 2px;
 }
 
-.card-growth {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin-top: 4px;
-}
-
-.card-growth .growth-number {
-  font-size: 12px;
-  font-weight: 600;
+.pipeline-growth {
+  font-size: 7px;
+  font-weight: 500;
   color: #059669;
 }
 
-.card-growth .growth-period {
-  font-size: 9px;
+.flow-arrow {
+  font-size: 16px;
   color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  opacity: 0.6;
 }
 
-.card-growth .growth-percentage {
-  font-size: 10px;
-  font-weight: 600;
-  color: #059669;
+.flow-arrow.left {
+  margin-right: 4px;
+}
+
+.flow-arrow.right {
+  margin-left: 4px;
 }
 
 /* Three Column Grid */
@@ -1510,40 +1558,71 @@ body {
     gap: 16px;
   }
   
-  .sales-cards-container {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+  .pipeline-container {
+    flex-direction: column;
+    gap: 8px;
   }
   
-  .sales-card {
-    padding: 16px 12px;
+  .pipeline-flow {
+    order: -1;
   }
   
-  .card-number {
-    font-size: 24px;
+  .pipeline-group {
+    justify-content: center;
   }
   
-  .card-label {
-    font-size: 12px;
+  .pipeline-card {
+    min-width: 60px;
+    padding: 4px 8px;
+  }
+  
+  .pipeline-number {
+    font-size: 14px;
+  }
+  
+  .pipeline-label {
+    font-size: 7px;
+  }
+  
+  .pipeline-growth {
+    font-size: 6px;
   }
 }
 
 @media (max-width: 768px) {
-  .sales-cards-container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  .pipeline-bar {
+    padding: 6px 16px;
   }
   
-  .sales-card {
-    padding: 16px 12px;
+  .pipeline-container {
+    flex-wrap: wrap;
+    gap: 6px;
   }
   
-  .card-number {
-    font-size: 22px;
+  .pipeline-group {
+    flex-wrap: wrap;
+    gap: 4px;
   }
   
-  .card-label {
-    font-size: 11px;
+  .pipeline-card {
+    min-width: 55px;
+    padding: 3px 6px;
+  }
+  
+  .pipeline-number {
+    font-size: 12px;
+  }
+  
+  .pipeline-label {
+    font-size: 6px;
+  }
+  
+  .pipeline-growth {
+    font-size: 5px;
+  }
+  
+  .flow-arrow {
+    font-size: 12px;
   }
   
   .column-header {
@@ -1555,23 +1634,52 @@ body {
   .event-item-small {
     padding: 12px 16px;
   }
+  
+  .nav-action-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 480px) {
-  .sales-cards-container {
-    grid-template-columns: 1fr;
-    gap: 8px;
+  .pipeline-bar {
+    padding: 4px 12px;
   }
   
-  .sales-card {
-    padding: 20px 16px;
+  .pipeline-container {
+    flex-direction: column;
+    gap: 6px;
   }
   
-  .card-number {
-    font-size: 28px;
+  .pipeline-group {
+    justify-content: space-around;
+    gap: 4px;
   }
   
-  .card-label {
-    font-size: 12px;
+  .pipeline-flow {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .flow-arrow {
+    transform: rotate(90deg);
+    font-size: 10px;
+  }
+  
+  .pipeline-card {
+    min-width: 50px;
+    padding: 2px 4px;
+  }
+  
+  .pipeline-number {
+    font-size: 11px;
+  }
+  
+  .pipeline-label {
+    font-size: 5px;
+  }
+  
+  .pipeline-growth {
+    font-size: 4px;
   }
 }
