@@ -346,7 +346,13 @@ function App() {
     if (!selectedContact) return;
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/contacts/${selectedContact.id}/touchpoints`, touchpointData);
+      // Only send note and source to backend (date is not supported for creation)
+      const createData = {
+        note: touchpointData.note,
+        source: touchpointData.source
+      };
+      
+      const response = await axios.post(`${API_BASE_URL}/contacts/${selectedContact.id}/touchpoints`, createData);
       
       // Update the contact's touchpoints in the local state
       const updatedContact = {
@@ -373,7 +379,13 @@ function App() {
     if (!selectedContact || !editingTouchpointId) return;
     
     try {
-      const response = await axios.put(`${API_BASE_URL}/touchpoints/${editingTouchpointId}`, touchpointData);
+      // Only send note and source to backend (date is not supported for updates)
+      const updateData = {
+        note: touchpointData.note,
+        source: touchpointData.source
+      };
+      
+      const response = await axios.put(`${API_BASE_URL}/touchpoints/${editingTouchpointId}`, updateData);
       
       // Update the contact's touchpoints in the local state
       const updatedContact = {
@@ -1100,7 +1112,7 @@ function App() {
                       {filteredContacts.map(contact => {
                         const recentTouchpoints = contact.touchpoints
                           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                          .slice(0, 2);
+                          .slice(0, 3);
                         
                         return (
                           <tr 

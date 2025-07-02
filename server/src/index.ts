@@ -297,6 +297,40 @@ app.post('/api/contacts/:id/touchpoints', requireAuth, async (req, res) => {
   }
 });
 
+// Update a touchpoint (protected)
+app.put('/api/touchpoints/:id', requireAuth, async (req, res) => {
+  try {
+    const touchpointId = parseInt(req.params.id);
+    const { note, source } = req.body;
+    
+    if (!note) {
+      return res.status(400).json({ error: 'Note is required' });
+    }
+    
+    // Verify the touchpoint exists
+    const existingTouchpoint = await prisma.touchpoint.findUnique({
+      where: { id: touchpointId }
+    });
+    
+    if (!existingTouchpoint) {
+      return res.status(404).json({ error: 'Touchpoint not found' });
+    }
+    
+    const updatedTouchpoint = await prisma.touchpoint.update({
+      where: { id: touchpointId },
+      data: {
+        note,
+        source: source || 'MANUAL'
+      }
+    });
+    
+    res.json(updatedTouchpoint);
+  } catch (error) {
+    console.error('Error updating touchpoint:', error);
+    res.status(500).json({ error: 'Failed to update touchpoint' });
+  }
+});
+
 // Delete a touchpoint (protected)
 app.delete('/api/touchpoints/:id', requireAuth, async (req, res) => {
   try {
