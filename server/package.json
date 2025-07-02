@@ -14,6 +14,7 @@
     "db:migrate-safe": "node scripts/run-migration.js",
     "db:migrate-resolve": "node scripts/resolve-failed-migration.js",
     "db:rollback": "node scripts/rollback-migration.js",
+    "db:deploy-preserve": "node scripts/deploy-with-user-preservation.js",
     "test": "node scripts/test-api-endpoints.js",
     "test:api": "node scripts/test-api-endpoints.js"
   },

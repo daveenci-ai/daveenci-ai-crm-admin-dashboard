@@ -10,7 +10,8 @@
     "start:frontend": "npm start --prefix src",
     "setup": "npm install && npm install --prefix server && npm install --prefix src",
     "db:migrate": "npm run db:migrate --prefix server",
-    "db:studio": "npm run db:studio --prefix server"
+    "db:studio": "npm run db:studio --prefix server",
+    "db:deploy-preserve": "npm run db:deploy-preserve --prefix server"
   },
   "keywords": [
     "crm",
