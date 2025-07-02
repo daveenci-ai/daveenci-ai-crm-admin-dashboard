@@ -93,7 +93,20 @@ function App() {
   const [breakdownContactFilter, setBreakdownContactFilter] = useState<string>('All Contacts');
 
   // Form state for creating contacts
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    primaryEmail: string;
+    secondaryEmail: string;
+    primaryPhone: string;
+    secondaryPhone: string;
+    company: string;
+    industry: string;
+    website: string;
+    address: string;
+    source: string;
+    status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT' | 'UNQUALIFIED' | 'CHURNED';
+    notes: string;
+  }>({
     name: '',
     primaryEmail: '',
     secondaryEmail: '',
@@ -104,11 +117,13 @@ function App() {
     website: '',
     address: '',
     source: '',
-    status: 'PROSPECT' as const,
+    status: 'PROSPECT',
     notes: ''
   });
 
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingContactId, setEditingContactId] = useState<number | null>(null);
 
   useEffect(() => {
     // Check for stored auth token on app load
@@ -238,25 +253,86 @@ function App() {
     try {
       const response = await axios.post(`${API_BASE_URL}/contacts`, formData);
       setContacts([response.data, ...contacts]);
-      setFormData({
-        name: '',
-        primaryEmail: '',
-        secondaryEmail: '',
-        primaryPhone: '',
-        secondaryPhone: '',
-        company: '',
-        industry: '',
-        website: '',
-        address: '',
-        source: '',
-        status: 'PROSPECT',
-        notes: ''
-      });
+      resetForm();
       setCurrentView('contacts');
     } catch (err) {
       setError('Failed to create contact');
       console.error('Error creating contact:', err);
     }
+  };
+
+  const updateContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingContactId) return;
+    
+    try {
+      const response = await axios.put(`${API_BASE_URL}/contacts/${editingContactId}`, formData);
+      setContacts(contacts.map(c => c.id === editingContactId ? response.data : c));
+      
+      // Update selected contact if it's the one being edited
+      if (selectedContact?.id === editingContactId) {
+        setSelectedContact(response.data);
+      }
+      
+      resetForm();
+    } catch (err) {
+      setError('Failed to update contact');
+      console.error('Error updating contact:', err);
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    if (isEditMode) {
+      updateContact(e);
+    } else {
+      createContact(e);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      primaryEmail: '',
+      secondaryEmail: '',
+      primaryPhone: '',
+      secondaryPhone: '',
+      company: '',
+      industry: '',
+      website: '',
+      address: '',
+      source: '',
+      status: 'PROSPECT',
+      notes: ''
+    });
+    setShowCreateForm(false);
+    setIsEditMode(false);
+    setEditingContactId(null);
+  };
+
+  const openEditForm = (contact: Contact) => {
+    setFormData({
+      name: contact.name,
+      primaryEmail: contact.primaryEmail,
+      secondaryEmail: contact.secondaryEmail || '',
+      primaryPhone: contact.primaryPhone || '',
+      secondaryPhone: contact.secondaryPhone || '',
+      company: contact.company || '',
+      industry: contact.industry || '',
+      website: contact.website || '',
+      address: contact.address || '',
+      source: contact.source || '',
+      status: contact.status,
+      notes: contact.notes || ''
+    });
+    setIsEditMode(true);
+    setEditingContactId(contact.id);
+    setShowCreateForm(true);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setShowCreateForm(true);
   };
 
   const deleteContact = async (contactId: number) => {

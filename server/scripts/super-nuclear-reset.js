@@ -162,11 +162,11 @@ async function createDefaultUser() {
     const prisma = new PrismaClient();
     
     // Create a default user
-    const defaultPassword = await bcrypt.hash('admin123', 10);
+    const defaultPassword = await bcrypt.hash('secret123~', 10);
     
     await prisma.user.create({
       data: {
-        name: 'Admin User',
+        name: 'Admin',
         email: 'admin@daveenci.com',
         password: defaultPassword,
         createdAt: new Date()
@@ -175,10 +175,7 @@ async function createDefaultUser() {
     
     await prisma.$disconnect();
     
-    console.log('📧 Default user created:');
-    console.log('   Email: admin@daveenci.com');
-    console.log('   Password: admin123');
-    console.log('   ⚠️  Please change this password after logging in!');
+
     
     return true;
   } catch (error) {
