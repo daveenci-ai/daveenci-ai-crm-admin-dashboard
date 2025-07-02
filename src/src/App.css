@@ -126,21 +126,7 @@ body {
   margin: 0 auto;
 }
 
-.dashboard-header {
-  margin-bottom: 32px;
-}
 
-.dashboard-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
-}
-
-.dashboard-header p {
-  font-size: 16px;
-  color: #64748b;
-}
 
 .dashboard-section {
   background: white;
@@ -337,20 +323,8 @@ body {
 .contacts-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: 24px;
-}
-
-.contacts-title h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
-}
-
-.contacts-title p {
-  font-size: 16px;
-  color: #64748b;
 }
 
 .contacts-actions {
@@ -836,12 +810,7 @@ body {
   opacity: 0.5;
 }
 
-.placeholder-content h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 12px;
-}
+
 
 .placeholder-content p {
   font-size: 18px;
@@ -1087,76 +1056,57 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  gap: 16px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  gap: 20px;
   overflow-x: auto;
 }
 
 .funnel-stage {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .funnel-stage:hover {
-  transform: scale(1.05);
+  transform: translateY(-1px);
 }
 
 .funnel-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 20px;
-  min-width: 120px;
-  border-radius: 16px;
+  justify-content: center;
+  padding: 16px;
+  width: 150px;
+  height: 80px;
+  border-radius: 8px;
   background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  position: relative;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
-.funnel-stage.prospects .funnel-content {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  color: #1e40af;
-}
 
-.funnel-stage.leads .funnel-content {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  color: #92400e;
-}
-
-.funnel-stage.opportunities .funnel-content {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-  color: #166534;
-}
-
-.funnel-stage.clients .funnel-content {
-  background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
-  color: #7c3aed;
-}
-
-.funnel-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
 
 .funnel-number {
-  font-size: 28px;
-  font-weight: 800;
-  margin-bottom: 4px;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 2px;
   line-height: 1;
+  color: #1e293b;
 }
 
 .funnel-label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  color: #64748b;
 }
 
 .funnel-conversion {
@@ -1169,33 +1119,33 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  margin-top: 8px;
+  gap: 1px;
+  margin-top: 4px;
 }
 
 .growth-number {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #059669;
 }
 
 .growth-period {
-  font-size: 9px;
+  font-size: 8px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .growth-percentage {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #059669;
 }
 
 .funnel-arrow {
-  font-size: 24px;
-  color: #94a3b8;
-  font-weight: bold;
+  font-size: 28px;
+  color: #64748b;
+  font-weight: 900;
 }
 
 .funnel-stage:last-child .funnel-arrow {
@@ -1455,12 +1405,14 @@ body {
   
   .funnel-container {
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
+    padding: 16px;
   }
   
   .funnel-arrow {
     transform: rotate(90deg);
     margin: 8px 0;
+    font-size: 24px;
   }
   
   .funnel-stage:last-child .funnel-arrow {
@@ -1470,20 +1422,17 @@ body {
 
 @media (max-width: 768px) {
   .funnel-container {
-    padding: 20px 16px;
+    padding: 16px;
   }
   
   .funnel-content {
-    min-width: 100px;
-    padding: 20px 16px;
+    width: 130px;
+    height: 70px;
+    padding: 12px;
   }
   
   .funnel-number {
-    font-size: 24px;
-  }
-  
-  .funnel-icon {
-    font-size: 28px;
+    font-size: 20px;
   }
   
   .column-header {
@@ -1500,11 +1449,11 @@ body {
 @media (max-width: 480px) {
   .funnel-container {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
   
   .funnel-content {
-    min-width: auto;
-    width: 100%;
+    width: 200px;
+    height: 70px;
   }
 }

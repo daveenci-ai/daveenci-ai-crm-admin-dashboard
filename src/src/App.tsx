@@ -406,7 +406,7 @@ function App() {
             className={`nav-item ${currentView === 'contacts' ? 'active' : ''}`}
             onClick={() => setCurrentView('contacts')}
           >
-            Contacts
+            All Contacts
           </button>
           <button 
             className={`nav-item ${currentView === 'email-campaigns' ? 'active' : ''}`}
@@ -440,18 +440,12 @@ function App() {
         {/* Dashboard View */}
         {currentView === 'dashboard' && (
           <div className="dashboard">
-            <div className="dashboard-header">
-              <h1>Dashboard</h1>
-              <p>Overview of your CRM performance and activities</p>
-            </div>
 
             {/* Sales Funnel Section */}
             <div className="dashboard-section">
-              <h2>Sales Funnel</h2>
               <div className="funnel-container">
                 <div className="funnel-stage prospects" onClick={() => setCurrentView('contacts')}>
                   <div className="funnel-content">
-                    <div className="funnel-icon">👥</div>
                     <div className="funnel-number">{prospectCount}</div>
                     <div className="funnel-label">Prospects</div>
                     <div className="funnel-growth">
@@ -465,7 +459,6 @@ function App() {
 
                 <div className="funnel-stage leads" onClick={() => setCurrentView('contacts')}>
                   <div className="funnel-content">
-                    <div className="funnel-icon">🎯</div>
                     <div className="funnel-number">{leadCount}</div>
                     <div className="funnel-label">Leads</div>
                     <div className="funnel-growth">
@@ -479,7 +472,6 @@ function App() {
 
                 <div className="funnel-stage opportunities" onClick={() => setCurrentView('contacts')}>
                   <div className="funnel-content">
-                    <div className="funnel-icon">⚡</div>
                     <div className="funnel-number">{opportunityCount}</div>
                     <div className="funnel-label">Opportunities</div>
                     <div className="funnel-growth">
@@ -493,7 +485,6 @@ function App() {
 
                 <div className="funnel-stage clients" onClick={() => setCurrentView('contacts')}>
                   <div className="funnel-content">
-                    <div className="funnel-icon">👑</div>
                     <div className="funnel-number">{clientCount}</div>
                     <div className="funnel-label">Clients</div>
                     <div className="funnel-growth">
@@ -718,10 +709,6 @@ function App() {
         {currentView === 'contacts' && (
           <div className="contacts-view">
             <div className="contacts-header">
-              <div className="contacts-title">
-                <h1>All Contacts</h1>
-                <p>Manage and track your {totalLeads} contacts</p>
-              </div>
               <div className="contacts-actions">
                 <button className="export-btn">
                   📄 Export CSV
@@ -957,7 +944,6 @@ function App() {
           <div className="placeholder-view">
             <div className="placeholder-content">
               <div className="placeholder-icon">📧</div>
-              <h1>Email Campaigns</h1>
               <p>Email campaign management coming soon</p>
               <span>Create, manage, and track your email marketing campaigns</span>
             </div>
@@ -969,7 +955,6 @@ function App() {
           <div className="placeholder-view">
             <div className="placeholder-content">
               <div className="placeholder-icon">📅</div>
-              <h1>Calendar</h1>
               <p>Calendar and scheduling coming soon</p>
               <span>Schedule meetings, set reminders, and manage your appointments</span>
             </div>
