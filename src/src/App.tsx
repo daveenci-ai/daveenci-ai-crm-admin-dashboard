@@ -9,9 +9,14 @@ axios.defaults.withCredentials = true;
 interface Contact {
   id: number;
   name: string;
-  email: string;
-  phone?: string;
+  primaryEmail: string;
+  secondaryEmail?: string;
+  primaryPhone?: string;
+  secondaryPhone?: string;
   company?: string;
+  industry?: string;
+  website?: string;
+  address?: string;
   source?: string;
   status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT';
   notes?: string;
@@ -23,6 +28,9 @@ interface Contact {
     name: string;
     email: string;
   };
+  // Legacy fields for backward compatibility
+  email?: string;
+  phone?: string;
 }
 
 interface Touchpoint {
@@ -40,7 +48,7 @@ interface RecentTouchpoint {
   contact: {
     id: number;
     name: string;
-    email: string;
+    primaryEmail: string;
     company?: string;
     status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT';
   };
@@ -49,6 +57,15 @@ interface RecentTouchpoint {
 const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
 
 type ViewType = 'dashboard' | 'contacts' | 'email-campaigns' | 'calendar';
+
+// Simple Tooltip Component
+const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
+  return (
+    <div className="tooltip-container" title={text}>
+      {children}
+    </div>
+  );
+};
 
 function App() {
   // Authentication state
@@ -77,9 +94,14 @@ function App() {
   // Form state for creating contacts
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phone: '',
+    primaryEmail: '',
+    secondaryEmail: '',
+    primaryPhone: '',
+    secondaryPhone: '',
     company: '',
+    industry: '',
+    website: '',
+    address: '',
     source: '',
     status: 'PROSPECT' as const,
     notes: ''
@@ -157,6 +179,58 @@ function App() {
     }
   };
 
+  const exportContacts = () => {
+    const csvHeaders = [
+      'Name',
+      'Primary Email',
+      'Secondary Email', 
+      'Primary Phone',
+      'Secondary Phone',
+      'Company',
+      'Industry',
+      'Website',
+      'Address',
+      'Source',
+      'Status',
+      'Notes',
+      'Created Date'
+    ];
+
+    const csvData = filteredContacts.map(contact => [
+      contact.name,
+      contact.primaryEmail || contact.email || '',
+      contact.secondaryEmail || '',
+      contact.primaryPhone || contact.phone || '',
+      contact.secondaryPhone || '',
+      contact.company || '',
+      contact.industry || '',
+      contact.website || '',
+      contact.address || '',
+      contact.source || '',
+      contact.status,
+      contact.notes || '',
+      formatDate(contact.createdAt)
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvData.map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `contacts-export-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const createContact = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -165,9 +239,14 @@ function App() {
       setContacts([response.data, ...contacts]);
       setFormData({
         name: '',
-        email: '',
-        phone: '',
+        primaryEmail: '',
+        secondaryEmail: '',
+        primaryPhone: '',
+        secondaryPhone: '',
         company: '',
+        industry: '',
+        website: '',
+        address: '',
         source: '',
         status: 'PROSPECT',
         notes: ''
@@ -351,10 +430,14 @@ function App() {
   // Filter contacts
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.company?.toLowerCase().includes(searchTerm.toLowerCase());
+      (contact.primaryEmail || contact.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.secondaryEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.address?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All Types' || contact.status === statusFilter;
-    const matchesIndustry = industryFilter === 'All Industries' || contact.source === industryFilter;
+    const matchesIndustry = industryFilter === 'All Industries' || contact.industry === industryFilter;
     
     return matchesSearch && matchesStatus && matchesIndustry;
   });
@@ -710,9 +793,13 @@ function App() {
           <div className="contacts-view">
             <div className="contacts-header">
               <div className="contacts-actions">
-                <button className="export-btn">
-                  📄 Export CSV
-                </button>
+                              <button 
+                className="export-btn"
+                onClick={exportContacts}
+                title="Export filtered contacts to CSV file"
+              >
+                📄 Export CSV ({filteredContacts.length})
+              </button>
                 <button 
                   className="add-contact-btn"
                   onClick={() => setShowCreateForm(true)}
@@ -726,7 +813,7 @@ function App() {
               <div className="search-box">
                 <input
                   type="text"
-                  placeholder="Search contacts by name, company, or email..."
+                  placeholder="Search contacts by name, email, company, industry, website, or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -752,6 +839,12 @@ function App() {
                   <option value="Finance">Finance</option>
                   <option value="Education">Education</option>
                   <option value="Construction">Construction</option>
+                  <option value="Manufacturing">Manufacturing</option>
+                  <option value="Retail">Retail</option>
+                  <option value="Consulting">Consulting</option>
+                  <option value="Real Estate">Real Estate</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Other">Other</option>
                 </select>
                 <select 
                   value={timeFilter} 
@@ -794,7 +887,7 @@ function App() {
                               </div>
                               <div>
                                 <div className="contact-name">{contact.name}</div>
-                                <div className="contact-email">{contact.email}</div>
+                                <div className="contact-email">{contact.primaryEmail || contact.email}</div>
                               </div>
                             </div>
                           </td>
@@ -812,7 +905,7 @@ function App() {
                               {getStatusLabel(contact.status)}
                             </span>
                           </td>
-                          <td>{contact.source || 'General'}</td>
+                          <td>{contact.industry || 'Not specified'}</td>
                           <td>📅 {formatDate(contact.createdAt)}</td>
                         </tr>
                       ))}
@@ -840,7 +933,7 @@ function App() {
                       </div>
                       <div className="contact-info-large">
                         <h2>{selectedContact.name}</h2>
-                        <p>{selectedContact.email}</p>
+                        <p>{selectedContact.primaryEmail || selectedContact.email}</p>
                         <span 
                           className="status-badge-large"
                           style={{ backgroundColor: getStatusColor(selectedContact.status) }}
@@ -862,24 +955,93 @@ function App() {
                     <div className="contact-details-content">
                       <div className="contact-info-section">
                         <h3>Contact Information</h3>
-                        <div className="info-grid">
-                          <div className="info-item">
-                            <label>Phone:</label>
-                            <span>{selectedContact.phone || 'Not provided'}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Company:</label>
-                            <span>{selectedContact.company || 'Not provided'}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Source:</label>
-                            <span>{selectedContact.source || 'Not specified'}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Created:</label>
-                            <span>{formatDate(selectedContact.createdAt)}</span>
+                        
+                        {/* Email Section */}
+                        <div className="info-subsection">
+                          <h4>Email Addresses</h4>
+                          <div className="info-grid">
+                            <div className="info-item">
+                              <label>Primary Email:</label>
+                              <span>{selectedContact.primaryEmail || selectedContact.email}</span>
+                            </div>
+                            {selectedContact.secondaryEmail && (
+                              <div className="info-item">
+                                <label>Secondary Email:</label>
+                                <span>{selectedContact.secondaryEmail}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
+
+                        {/* Phone Section */}
+                        <div className="info-subsection">
+                          <h4>Phone Numbers</h4>
+                          <div className="info-grid">
+                            <div className="info-item">
+                              <label>Primary Phone:</label>
+                              <span>{selectedContact.primaryPhone || selectedContact.phone || 'Not provided'}</span>
+                            </div>
+                            {selectedContact.secondaryPhone && (
+                              <div className="info-item">
+                                <label>Secondary Phone:</label>
+                                <span>{selectedContact.secondaryPhone}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Business Information */}
+                        <div className="info-subsection">
+                          <h4>Business Information</h4>
+                          <div className="info-grid">
+                            <div className="info-item">
+                              <label>Company:</label>
+                              <span>{selectedContact.company || 'Not provided'}</span>
+                            </div>
+                            {selectedContact.industry && (
+                              <div className="info-item">
+                                <label>Industry:</label>
+                                <span>{selectedContact.industry}</span>
+                              </div>
+                            )}
+                            {selectedContact.website && (
+                              <div className="info-item">
+                                <label>Website:</label>
+                                <span>
+                                  <a href={selectedContact.website} target="_blank" rel="noopener noreferrer">
+                                    {selectedContact.website}
+                                  </a>
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Address */}
+                        {selectedContact.address && (
+                          <div className="info-subsection">
+                            <h4>Address</h4>
+                            <div className="address-display">
+                              <p>{selectedContact.address}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* CRM Information */}
+                        <div className="info-subsection">
+                          <h4>CRM Information</h4>
+                          <div className="info-grid">
+                            <div className="info-item">
+                              <label>Source:</label>
+                              <span>{selectedContact.source || 'Not specified'}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Created:</label>
+                              <span>{formatDate(selectedContact.createdAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+
                         {selectedContact.notes && (
                           <div className="notes-section">
                             <label>Notes:</label>
@@ -976,83 +1138,179 @@ function App() {
               </div>
               
               <form onSubmit={createContact} className="contact-form">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Full Name *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
-                  </div>
+                {/* Basic Information Section */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Basic Information</h3>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Full Name *</label>
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                        placeholder="John Doe"
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label>Email Address *</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Phone Number</label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Company</label>
-                    <input
-                      type="text"
-                      value={formData.company}
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Source</label>
-                    <select 
-                      value={formData.source}
-                      onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                    >
-                      <option value="">Select Source</option>
-                      <option value="Website">Website</option>
-                      <option value="Referral">Referral</option>
-                      <option value="Social Media">Social Media</option>
-                      <option value="Email">Email</option>
-                      <option value="Phone">Phone</option>
-                      <option value="Event">Event</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Status</label>
-                    <select 
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                    >
-                      <option value="PROSPECT">Prospect</option>
-                      <option value="LEAD">Lead</option>
-                      <option value="OPPORTUNITY">Opportunity</option>
-                      <option value="CLIENT">Client</option>
-                    </select>
+                    <div className="form-group">
+                      <label>Company</label>
+                      <input
+                        type="text"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        placeholder="Company name"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="form-group full-width">
-                  <label>Notes</label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
-                    placeholder="Add any additional notes about this contact..."
-                  />
+                {/* Contact Methods Section */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Contact Methods</h3>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Primary Email *</label>
+                      <input
+                        type="email"
+                        value={formData.primaryEmail}
+                        onChange={(e) => setFormData({ ...formData, primaryEmail: e.target.value })}
+                        required
+                        placeholder="john@company.com"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <Tooltip text="Optional alternative email address (personal, backup, etc.)">
+                        <label>Secondary Email</label>
+                      </Tooltip>
+                      <input
+                        type="email"
+                        value={formData.secondaryEmail}
+                        onChange={(e) => setFormData({ ...formData, secondaryEmail: e.target.value })}
+                        placeholder="john.personal@gmail.com"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Primary Phone</label>
+                      <input
+                        type="tel"
+                        value={formData.primaryPhone}
+                        onChange={(e) => setFormData({ ...formData, primaryPhone: e.target.value })}
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Secondary Phone</label>
+                      <input
+                        type="tel"
+                        value={formData.secondaryPhone}
+                        onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
+                        placeholder="+1 (555) 987-6543"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Business Information Section */}
+                <div className="form-section">
+                  <h3 className="form-section-title">Business Information</h3>
+                  <div className="form-grid">
+
+                    <div className="form-group">
+                      <Tooltip text="Select the primary industry this contact operates in">
+                        <label>Industry</label>
+                      </Tooltip>
+                      <select
+                        value={formData.industry}
+                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                      >
+                        <option value="">Select industry...</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Education">Education</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Website</label>
+                      <input
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                        placeholder="https://company.com"
+                      />
+                    </div>
+
+                    <div className="form-group full-width">
+                      <label>Address</label>
+                      <textarea
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        rows={2}
+                        placeholder="123 Main St, City, State 12345"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CRM Information Section */}
+                <div className="form-section">
+                  <h3 className="form-section-title">CRM Information</h3>
+                  <div className="form-grid">
+
+                    <div className="form-group">
+                      <Tooltip text="How did you first discover or meet this contact?">
+                        <label>Source</label>
+                      </Tooltip>
+                      <select 
+                        value={formData.source}
+                        onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                      >
+                        <option value="">How did you find this contact?</option>
+                        <option value="WEBSITE">Website</option>
+                        <option value="REFERRAL">Referral</option>
+                        <option value="SOCIAL_MEDIA">Social Media</option>
+                        <option value="EMAIL">Email Campaign</option>
+                        <option value="PHONE">Phone Call</option>
+                        <option value="EVENT">Event</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Status</label>
+                      <select 
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      >
+                        <option value="PROSPECT">New Prospect</option>
+                        <option value="LEAD">Contacted Lead</option>
+                        <option value="OPPORTUNITY">Qualified Opportunity</option>
+                        <option value="CLIENT">Converted Client</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group full-width">
+                      <label>Notes</label>
+                      <textarea
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        rows={3}
+                        placeholder="Add any additional notes about this contact..."
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="form-actions">

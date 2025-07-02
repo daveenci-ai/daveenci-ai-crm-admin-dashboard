@@ -9,7 +9,12 @@
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "npx prisma studio",
     "db:generate": "npx prisma generate",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:backup": "node scripts/backup-database.js",
+    "db:verify": "node scripts/verify-migration.js",
+    "db:migrate-safe": "node scripts/run-migration.js",
+    "db:rollback": "node scripts/rollback-migration.js",
+    "test": "node scripts/test-api-endpoints.js",
+    "test:api": "node scripts/test-api-endpoints.js"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +25,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.9",
     "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.7.7",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

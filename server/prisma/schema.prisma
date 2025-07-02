@@ -25,19 +25,24 @@ model User {
 }
 
 model Contact {
-  id          Int          @id @default(autoincrement())
-  name        String
-  email       String
-  phone       String?
-  company     String?
-  source      String?
-  status      Status
-  notes       String?
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  user        User         @relation(fields: [userId], references: [id])
-  userId      Int          @map("user_id")
-  touchpoints Touchpoint[]
+  id             Int          @id @default(autoincrement())
+  name           String
+  primaryEmail   String       @map("primary_email")
+  secondaryEmail String?      @map("secondary_email")
+  primaryPhone   String?      @map("primary_phone")
+  secondaryPhone String?      @map("secondary_phone")
+  company        String?
+  industry       String?
+  website        String?
+  address        String?
+  source         String?
+  status         Status
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  user           User         @relation(fields: [userId], references: [id])
+  userId         Int          @map("user_id")
+  touchpoints    Touchpoint[]
 
   @@map("contacts")
 }

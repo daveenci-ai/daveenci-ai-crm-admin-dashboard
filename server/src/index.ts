@@ -129,20 +129,42 @@ app.get('/api/contacts/:id', requireAuth, async (req, res) => {
 // Create a new contact (protected)
 app.post('/api/contacts', requireAuth, async (req, res) => {
   try {
-    const { name, email, phone, company, source, status, notes } = req.body;
+    const { 
+      name, 
+      primaryEmail, 
+      secondaryEmail, 
+      primaryPhone, 
+      secondaryPhone, 
+      company, 
+      industry,
+      website,
+      address,
+      source, 
+      status, 
+      notes,
+      // Legacy support for old field names
+      email,
+      phone
+    } = req.body;
     const userId = (req as AuthenticatedRequest).user.id;
     
-    // Basic validation
-    if (!name || !email) {
-      return res.status(400).json({ error: 'Name and email are required' });
+    // Basic validation - support both old and new field names
+    const emailToUse = primaryEmail || email;
+    if (!name || !emailToUse) {
+      return res.status(400).json({ error: 'Name and primary email are required' });
     }
     
     const newContact = await prisma.contact.create({ 
       data: {
         name,
-        email,
-        phone,
+        primaryEmail: emailToUse,
+        secondaryEmail,
+        primaryPhone: primaryPhone || phone,
+        secondaryPhone,
         company,
+        industry,
+        website,
+        address,
         source,
         status: status || 'PROSPECT',
         notes,
@@ -171,15 +193,36 @@ app.post('/api/contacts', requireAuth, async (req, res) => {
 app.put('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
-    const { name, email, phone, company, source, status, notes } = req.body;
+    const { 
+      name, 
+      primaryEmail, 
+      secondaryEmail, 
+      primaryPhone, 
+      secondaryPhone, 
+      company, 
+      industry,
+      website,
+      address,
+      source, 
+      status, 
+      notes,
+      // Legacy support for old field names
+      email,
+      phone
+    } = req.body;
     
     const updatedContact = await prisma.contact.update({
       where: { id: contactId },
       data: {
         name,
-        email,
-        phone,
+        primaryEmail: primaryEmail || email,
+        secondaryEmail,
+        primaryPhone: primaryPhone || phone,
+        secondaryPhone,
         company,
+        industry,
+        website,
+        address,
         source,
         status,
         notes
@@ -290,7 +333,7 @@ app.get('/api/touchpoints/recent', requireAuth, async (req, res) => {
           select: {
             id: true,
             name: true,
-            email: true,
+            primaryEmail: true,
             company: true,
             status: true
           }
