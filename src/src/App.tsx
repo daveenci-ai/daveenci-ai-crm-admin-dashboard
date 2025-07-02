@@ -1371,15 +1371,11 @@ function App() {
                     </div>
 
                     {/* Company Section */}
-                    {(selectedContact.company || selectedContact.industry || selectedContact.website || selectedContact.address) && (
+                    {(selectedContact.company || selectedContact.industry || selectedContact.website || selectedContact.address || (selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing')) && (
                       <>
                         <div className="section-divider"></div>
                         <div className="contact-company-section">
-                          <div className="company-icon">
-                            🏢
-                          </div>
-                          
-                          <div className="company-info">
+                          <div className="company-main-info">
                             {selectedContact.company && (
                               <h3 className="company-name">{selectedContact.company}</h3>
                             )}
@@ -1408,22 +1404,14 @@ function App() {
                               )}
                             </div>
                           </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Notes Section */}
-                    {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
-                      <>
-                        <div className="section-divider"></div>
-                        <div className="contact-notes-section">
-                          <div className="notes-icon">
-                            📝
-                          </div>
-                          <div className="notes-content">
-                            <h4 className="notes-title">Notes</h4>
-                            <p className="notes-text">{selectedContact.notes}</p>
-                          </div>
+                          
+                          {/* Notes on the right side */}
+                          {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
+                            <div className="company-notes">
+                              <h4 className="notes-title">Notes</h4>
+                              <p className="notes-text">{selectedContact.notes}</p>
+                            </div>
+                          )}
                         </div>
                       </>
                     )}
