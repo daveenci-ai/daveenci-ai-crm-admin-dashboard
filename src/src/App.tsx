@@ -89,7 +89,7 @@ function App() {
   
   // Dashboard breakdown filters
   const [breakdownType, setBreakdownType] = useState<string>('Industry');
-  const [breakdownPeriod, setBreakdownPeriod] = useState<string>('Last 28 Days');
+  const [breakdownPeriod, setBreakdownPeriod] = useState<string>('All Time');
   const [breakdownContactFilter, setBreakdownContactFilter] = useState<string>('All Contacts');
 
   // Form state for creating contacts
@@ -608,6 +608,149 @@ function App() {
 
 
 
+  // Calculate breakdown data based on filters
+  const getBreakdownData = () => {
+    // First filter contacts by time period
+    let breakdownContacts = contacts;
+    if (breakdownPeriod !== 'All Time') {
+      const now = new Date();
+      let daysBack = 0;
+      switch (breakdownPeriod) {
+        case 'Last 7 Days': daysBack = 7; break;
+        case 'Last 28 Days': daysBack = 28; break;
+        case 'Last 3 Months': daysBack = 90; break;
+        case 'Last 6 Months': daysBack = 180; break;
+        case 'Last 12 Months': daysBack = 365; break;
+      }
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+      breakdownContacts = contacts.filter(contact => new Date(contact.createdAt) >= cutoffDate);
+    }
+
+    // Then filter by contact type
+    if (breakdownContactFilter !== 'All Contacts') {
+      const statusMap = {
+        'Prospects': 'PROSPECT',
+        'Leads': 'LEAD', 
+        'Opportunities': 'OPPORTUNITY',
+        'Clients': 'CLIENT'
+      };
+      const targetStatus = statusMap[breakdownContactFilter as keyof typeof statusMap];
+      if (targetStatus) {
+        breakdownContacts = breakdownContacts.filter(contact => contact.status === targetStatus);
+      }
+    }
+
+    // Group by breakdown type and calculate percentages
+    const counts: { [key: string]: number } = {};
+    const total = breakdownContacts.length;
+
+    if (total === 0) return [];
+
+    breakdownContacts.forEach(contact => {
+      let key = '';
+      switch (breakdownType) {
+        case 'Industry':
+          key = contact.industry || 'Not specified';
+          break;
+        case 'Source':
+          key = contact.source || 'Not specified';
+          break;
+        case 'Status':
+          key = getStatusLabel(contact.status);
+          break;
+        case 'Location':
+          // Extract city/state from address, or use "Not specified"
+          if (contact.address) {
+            const addressParts = contact.address.split(',');
+            key = addressParts.length > 1 ? addressParts[addressParts.length - 1].trim() : contact.address;
+          } else {
+            key = 'Not specified';
+          }
+          break;
+        default:
+          key = 'Unknown';
+      }
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    // Convert to array and sort by count
+    const results = Object.entries(counts)
+      .map(([label, count]) => ({
+        label,
+        count,
+        percentage: ((count / total) * 100).toFixed(1)
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6); // Show top 6 categories
+
+    return results;
+  };
+
+  const breakdownData = getBreakdownData();
+
+  // Get colors for breakdown stats
+  const getBreakdownColor = (index: number) => {
+    const colors = ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+    return colors[index % colors.length];
+  };
+
+  // Generate upcoming events (mock data for now)
+  const getUpcomingEvents = () => {
+    const events = [];
+    const today = new Date();
+    
+    // Generate 10 mock events over the next 14 days
+    const eventTypes = [
+      { title: 'Follow-up call', location: '📞 Phone Call', icon: '📞' },
+      { title: 'Product demo', location: '💻 Virtual Meeting', icon: '💻' },
+      { title: 'Client meeting', location: '📍 Conference Room', icon: '🤝' },
+      { title: 'Sales presentation', location: '🏢 Client Office', icon: '📊' },
+      { title: 'Contract review', location: '📞 Phone Call', icon: '📄' },
+      { title: 'Quarterly check-in', location: '💻 Zoom Meeting', icon: '📈' },
+      { title: 'Project kickoff', location: '📍 Meeting Room B', icon: '🚀' },
+      { title: 'Training session', location: '💻 Virtual Training', icon: '🎓' },
+      { title: 'Proposal discussion', location: '📞 Conference Call', icon: '💼' },
+      { title: 'Partnership meeting', location: '🏢 Partner Office', icon: '🤝' }
+    ];
+
+    const times = [
+      '9:00 AM - 10:00 AM',
+      '10:30 AM - 11:30 AM', 
+      '1:00 PM - 2:00 PM',
+      '2:30 PM - 3:30 PM',
+      '3:30 PM - 4:30 PM',
+      '4:00 PM - 5:00 PM'
+    ];
+
+    // Create some contacts that have opportunities/leads for realistic events
+    const potentialContacts = contacts.filter(c => 
+      c.status === 'LEAD' || c.status === 'OPPORTUNITY' || c.status === 'CLIENT'
+    );
+
+    for (let i = 0; i < 10; i++) {
+      const eventDate = new Date(today);
+      eventDate.setDate(today.getDate() + Math.floor(i / 2) + 1); // Spread over next 7 days
+      
+      const eventType = eventTypes[i];
+      const contact = potentialContacts[i % Math.max(1, potentialContacts.length)];
+      const time = times[i % times.length];
+      
+      events.push({
+        id: `event-${i}`,
+        title: contact ? `${eventType.title} with ${contact.name}` : eventType.title,
+        location: eventType.location,
+        time: time,
+        date: eventDate,
+        contact: contact
+      });
+    }
+    
+    return events.sort((a, b) => a.date.getTime() - b.date.getTime());
+  };
+
+  const upcomingEvents = getUpcomingEvents();
+
   // Filter contacts
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -842,7 +985,7 @@ function App() {
                         <span>Add contacts to see them here</span>
                       </div>
                     ) : (
-                      newContacts.slice(0, 5).map((contact) => (
+                      newContacts.slice(0, 10).map((contact) => (
                         <div key={contact.id} className="contact-item-small">
                           <div className="contact-avatar-small">
                             {contact.name.charAt(0).toUpperCase()}
@@ -877,7 +1020,7 @@ function App() {
                         <span>Interactions will appear here</span>
                       </div>
                     ) : (
-                      recentTouchpoints.slice(0, 5).map((touchpoint) => (
+                      recentTouchpoints.slice(0, 10).map((touchpoint) => (
                         <div key={touchpoint.id} className="touchpoint-item-small">
                           <div 
                             className="touchpoint-icon-small"
@@ -908,41 +1051,28 @@ function App() {
                     <span className="column-subtitle">Next 7 Days</span>
                   </div>
                   <div className="column-content">
-                    <div className="event-item-small">
-                      <div className="event-date-small">
-                        <div className="event-day">23</div>
-                        <div className="event-month">Jan</div>
+                    {upcomingEvents.length === 0 ? (
+                      <div className="empty-state-small">
+                        <p>No upcoming events</p>
+                        <span>Schedule meetings to see them here</span>
                       </div>
-                      <div className="event-info-small">
-                        <div className="event-title-small">Meeting with Sarah Johnson</div>
-                        <div className="event-location-small">📍 Conference Room A</div>
-                        <div className="event-time-small">⏰ 2:00 PM - 3:00 PM</div>
-                      </div>
-                    </div>
-
-                    <div className="event-item-small">
-                      <div className="event-date-small">
-                        <div className="event-day">24</div>
-                        <div className="event-month">Jan</div>
-                      </div>
-                      <div className="event-info-small">
-                        <div className="event-title-small">Call with Michael Chen</div>
-                        <div className="event-location-small">📞 Phone Call</div>
-                        <div className="event-time-small">⏰ 10:00 AM - 11:00 AM</div>
-                      </div>
-                    </div>
-
-                    <div className="event-item-small">
-                      <div className="event-date-small">
-                        <div className="event-day">25</div>
-                        <div className="event-month">Jan</div>
-                      </div>
-                      <div className="event-info-small">
-                        <div className="event-title-small">Demo for Emily Rodriguez</div>
-                        <div className="event-location-small">💻 Virtual Meeting</div>
-                        <div className="event-time-small">⏰ 3:30 PM - 4:30 PM</div>
-                      </div>
-                    </div>
+                    ) : (
+                      upcomingEvents.map((event) => (
+                        <div key={event.id} className="event-item-small">
+                          <div className="event-date-small">
+                            <div className="event-day">{event.date.getDate()}</div>
+                            <div className="event-month">
+                              {event.date.toLocaleDateString('en-US', { month: 'short' })}
+                            </div>
+                          </div>
+                          <div className="event-info-small">
+                            <div className="event-title-small">{event.title}</div>
+                            <div className="event-location-small">{event.location}</div>
+                            <div className="event-time-small">⏰ {event.time}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -978,6 +1108,7 @@ function App() {
                     value={breakdownPeriod} 
                     onChange={(e) => setBreakdownPeriod(e.target.value)}
                   >
+                    <option value="All Time">All Time</option>
                     <option value="Last 7 Days">Last 7 Days</option>
                     <option value="Last 28 Days">Last 28 Days</option>
                     <option value="Last 3 Months">Last 3 Months</option>
@@ -997,37 +1128,23 @@ function App() {
                 </div>
                 
                 <div className="breakdown-stats">
-                  <div className="breakdown-stat">
-                    <div className="stat-color" style={{backgroundColor: '#6366f1'}}></div>
-                    <div className="stat-info">
-                      <div className="stat-label">Technology</div>
-                      <div className="stat-percentage">35%</div>
+                  {breakdownData.length === 0 ? (
+                    <div className="breakdown-empty">
+                      <p>No data available</p>
+                      <span>Try adjusting your filter criteria</span>
                     </div>
-                  </div>
-                  
-                  <div className="breakdown-stat">
-                    <div className="stat-color" style={{backgroundColor: '#10b981'}}></div>
-                    <div className="stat-info">
-                      <div className="stat-label">Healthcare</div>
-                      <div className="stat-percentage">28%</div>
-                    </div>
-                  </div>
-                  
-                  <div className="breakdown-stat">
-                    <div className="stat-color" style={{backgroundColor: '#f59e0b'}}></div>
-                    <div className="stat-info">
-                      <div className="stat-label">Finance</div>
-                      <div className="stat-percentage">22%</div>
-                    </div>
-                  </div>
-                  
-                  <div className="breakdown-stat">
-                    <div className="stat-color" style={{backgroundColor: '#8b5cf6'}}></div>
-                    <div className="stat-info">
-                      <div className="stat-label">Education</div>
-                      <div className="stat-percentage">15%</div>
-                    </div>
-                  </div>
+                  ) : (
+                    breakdownData.map((item, index) => (
+                      <div key={item.label} className="breakdown-stat">
+                        <div className="stat-color" style={{backgroundColor: getBreakdownColor(index)}}></div>
+                        <div className="stat-info">
+                          <div className="stat-label">{item.label}</div>
+                          <div className="stat-percentage">{item.percentage}%</div>
+                        </div>
+                        <div className="stat-count">({item.count})</div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1229,13 +1346,12 @@ function App() {
                           🗑️
                         </button>
                       </div>
-                    </div>
-                    
-                    <div className="contact-header-meta">
-                      {selectedContact.source && (
-                        <span className="source-tag">Source: {selectedContact.source}</span>
-                      )}
-                      <span className="created-date">Added: {formatDate(selectedContact.createdAt)}</span>
+                      <div className="contact-header-meta">
+                        {selectedContact.source && (
+                          <span className="source-tag">Source: {selectedContact.source}</span>
+                        )}
+                        <span className="created-date">Added: {formatDate(selectedContact.createdAt)}</span>
+                      </div>
                     </div>
 
                     <div className="contact-details-content">
