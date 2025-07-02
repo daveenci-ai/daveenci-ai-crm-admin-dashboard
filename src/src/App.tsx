@@ -551,8 +551,6 @@ function App() {
     }
   };
 
-
-
   // Calculate dashboard stats
   const totalLeads = contacts.length;
   const convertedLeads = contacts.filter(contact => contact.status === 'CONVERTED_CLIENTS').length;
@@ -565,8 +563,6 @@ function App() {
   const disqualifiedCount = contacts.filter(c => c.status === 'DISQUALIFIED_LEADS').length;
   const declinedCount = contacts.filter(c => c.status === 'DECLINED_OPPORTUNITIES').length;
   const churnedCount = contacts.filter(c => c.status === 'CHURNED_CLIENTS').length;
-
-
 
   // Calculate new contacts (last 7 days)
   const sevenDaysAgo = new Date();
@@ -613,8 +609,6 @@ function App() {
   const disqualifiedGrowth = disqualifiedCount > 0 ? Math.min(Math.round((newDisqualified28Days / disqualifiedCount) * 100), 100) : 0;
   const declinedGrowth = declinedCount > 0 ? Math.min(Math.round((newDeclined28Days / declinedCount) * 100), 100) : 0;
   const churnedGrowth = churnedCount > 0 ? Math.min(Math.round((newChurned28Days / churnedCount) * 100), 100) : 0;
-
-
 
   // Calculate breakdown data based on filters
   const getBreakdownData = () => {
@@ -714,7 +708,7 @@ function App() {
     // Generate 10 mock events over the next 14 days
     const eventTypes = [
       { title: 'Follow-up call', location: '📞 Phone Call', icon: '📞' },
-      { title: 'Product demo', location: '💻 Virtual Meeting', icon: '💻' },
+      { title: 'Product demo', location: '💻 Virtual Meeting', icon: '��' },
       { title: 'Client meeting', location: '📍 Conference Room', icon: '🤝' },
       { title: 'Sales presentation', location: '🏢 Client Office', icon: '📊' },
       { title: 'Contract review', location: '📞 Phone Call', icon: '📄' },
@@ -1094,8 +1088,6 @@ function App() {
               </div>
             </div>
 
-
-
             {/* Breakdown Section */}
             <div className="dashboard-section breakdown-section">
               <div className="section-header">
@@ -1173,7 +1165,6 @@ function App() {
         {/* Contacts View */}
         {currentView === 'contacts' && (
           <div className="contacts-view">
-
 
             <div className="contacts-controls">
               <div className="controls-split">
@@ -1323,112 +1314,152 @@ function App() {
               <div className="contact-details-panel">
                 {selectedContact ? (
                   <div className="contact-details">
-                    <div className="contact-details-header">
+                    {/* Top Section: Essential Contact Info */}
+                    <div className="contact-header-section">
                       <div className="contact-avatar-large">
                         {selectedContact.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="contact-info-large">
-                        <h2>{selectedContact.name}</h2>
-                        <div className="contact-inline-info">
-                          <div className="contact-email-row">
-                            <span className="primary-contact">{selectedContact.primaryEmail || selectedContact.email}</span>
-                            {selectedContact.secondaryEmail && (
-                              <span className="secondary-contact"> | {selectedContact.secondaryEmail}</span>
-                            )}
+                      
+                      <div className="contact-essential-info">
+                        <h2 className="contact-name-primary">{selectedContact.name}</h2>
+                        <div className="contact-methods">
+                          <div className="contact-method">
+                            📧 {selectedContact.primaryEmail || selectedContact.email}
+                            {selectedContact.secondaryEmail && <span className="secondary-info"> • {selectedContact.secondaryEmail}</span>}
                           </div>
-                          <div className="contact-phone-row">
-                            <span className="primary-contact">{selectedContact.primaryPhone || selectedContact.phone || 'No phone'}</span>
-                            {selectedContact.secondaryPhone && (
-                              <span className="secondary-contact"> | {selectedContact.secondaryPhone}</span>
-                            )}
+                          <div className="contact-method">
+                            📞 {selectedContact.primaryPhone || selectedContact.phone || 'No phone'}
+                            {selectedContact.secondaryPhone && <span className="secondary-info"> • {selectedContact.secondaryPhone}</span>}
                           </div>
                         </div>
                       </div>
-                      <div className="contact-actions">
-                        <button 
-                          className="edit-icon-btn"
-                          onClick={() => openEditForm(selectedContact)}
-                          title="Edit contact"
-                        >
-                          ✏️
-                        </button>
-                        <span 
-                          className="status-badge-large"
+                      
+                      <div className="contact-status-actions">
+                        <div 
+                          className="status-badge-primary"
                           style={{ backgroundColor: getStatusColor(selectedContact.status) }}
                         >
                           {getStatusLabel(selectedContact.status)}
-                        </span>
-                        <button 
-                          className="delete-icon-btn"
-                          onClick={() => deleteContact(selectedContact.id)}
-                          title="Delete contact"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                      <div className="contact-header-meta">
-                        {selectedContact.source && (
-                          <span className="source-tag">Source: {selectedContact.source}</span>
-                        )}
-                        <span className="created-date">Added: {formatDate(selectedContact.createdAt)}</span>
+                        </div>
+                        <div className="contact-actions-row">
+                          <button 
+                            className="action-btn edit-btn"
+                            onClick={() => openEditForm(selectedContact)}
+                            title="Edit contact"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            className="action-btn delete-btn"
+                            onClick={() => deleteContact(selectedContact.id)}
+                            title="Delete contact"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="contact-details-content">
-                      {/* Company and Address */}
-                      <div className="contact-basic-info">
-                        {selectedContact.company && (
-                          <div className="company-section">
-                            <h3>{selectedContact.company}</h3>
+                    {/* Divider */}
+                    <div className="contact-divider"></div>
+                    
+                    {/* Bottom Section: Company & Additional Details */}
+                    <div className="contact-secondary-info">
+                      {/* Company Information */}
+                      {(selectedContact.company || selectedContact.industry || selectedContact.website) && (
+                        <div className="info-block company-block">
+                          <div className="info-block-header">
+                            <span className="info-icon">🏢</span>
+                            <span className="info-title">Company</span>
+                          </div>
+                          <div className="info-content">
+                            {selectedContact.company && (
+                              <div className="company-name">{selectedContact.company}</div>
+                            )}
                             {selectedContact.industry && (
-                              <span className="industry-tag">{selectedContact.industry}</span>
+                              <div className="company-industry">{selectedContact.industry}</div>
                             )}
                             {selectedContact.website && (
-                              <div className="website-link">
+                              <div className="company-website">
                                 <a href={selectedContact.website.startsWith('http') ? selectedContact.website : `https://${selectedContact.website}`} target="_blank" rel="noopener noreferrer">
                                   🌐 {selectedContact.website}
                                 </a>
                               </div>
                             )}
                           </div>
-                        )}
-                        
-                        {selectedContact.address && (
-                          <div className="address-section">
-                            <h4>📍 Address</h4>
-                            <p>{selectedContact.address}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Notes Section */}
-                      {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
-                        <div className="notes-section">
-                          <h4>📝 Notes</h4>
-                          <p>{selectedContact.notes}</p>
                         </div>
                       )}
-
-                      {/* Touchpoints Section */}
-                      <div className="touchpoints-section">
-                        <div className="touchpoints-header">
-                          <h3>💬 Touchpoints ({selectedContact.touchpoints.length})</h3>
-                          <button 
-                            className="add-touchpoint-btn"
-                            onClick={openCreateTouchpoint}
-                          >
-                            + Add Touchpoint
-                          </button>
+                      
+                      {/* Location Information */}
+                      {selectedContact.address && (
+                        <div className="info-block location-block">
+                          <div className="info-block-header">
+                            <span className="info-icon">📍</span>
+                            <span className="info-title">Location</span>
+                          </div>
+                          <div className="info-content">
+                            <div className="location-address">{selectedContact.address}</div>
+                          </div>
                         </div>
-                        
-                        <div className="touchpoints-list">
-                          {selectedContact.touchpoints.length === 0 ? (
-                            <div className="touchpoints-empty">
-                              <p>No touchpoints yet</p>
-                              <span>Add your first interaction with this contact</span>
-                            </div>
-                          ) : (
-                            selectedContact.touchpoints.map((touchpoint) => (
+                      )}
+                      
+                      {/* Source & Date Information */}
+                      <div className="info-block meta-block">
+                        <div className="info-block-header">
+                          <span className="info-icon">📊</span>
+                          <span className="info-title">Details</span>
+                        </div>
+                        <div className="info-content">
+                          <div className="meta-row">
+                            <span className="meta-label">Source:</span>
+                            <span className="meta-value">{selectedContact.source || 'Not specified'}</span>
+                          </div>
+                          <div className="meta-row">
+                            <span className="meta-label">Added:</span>
+                            <span className="meta-value">{formatDate(selectedContact.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Notes */}
+                      {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
+                        <div className="info-block notes-block">
+                          <div className="info-block-header">
+                            <span className="info-icon">📝</span>
+                            <span className="info-title">Notes</span>
+                          </div>
+                          <div className="info-content">
+                            <div className="notes-text">{selectedContact.notes}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Touchpoints Section */}
+                    <div className="touchpoints-section-redesigned">
+                      <div className="touchpoints-header">
+                        <div className="section-title">
+                          <span className="section-icon">💬</span>
+                          <span>Touchpoints ({selectedContact.touchpoints.length})</span>
+                        </div>
+                        <button 
+                          className="add-touchpoint-btn-new"
+                          onClick={openCreateTouchpoint}
+                        >
+                          + Add
+                        </button>
+                      </div>
+                      
+                      <div className="touchpoints-list">
+                        {selectedContact.touchpoints.length === 0 ? (
+                          <div className="touchpoints-empty">
+                            <p>No touchpoints yet</p>
+                            <span>Add your first interaction with this contact</span>
+                          </div>
+                        ) : (
+                          selectedContact.touchpoints
+                            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                            .map((touchpoint) => (
                               <div key={touchpoint.id} className="touchpoint-item">
                                 <div 
                                   className="touchpoint-icon"
@@ -1439,23 +1470,23 @@ function App() {
                                 <div className="touchpoint-content">
                                   <div className="touchpoint-header">
                                     <span className="touchpoint-type">
-                                      {touchpoint.source.replace('_', ' ').toLowerCase()}
+                                      {touchpoint.source.charAt(0) + touchpoint.source.slice(1).toLowerCase().replace('_', ' ')}
                                     </span>
                                     <span className="touchpoint-time">
                                       {formatActivityTime(touchpoint.createdAt)}
                                     </span>
                                     <div className="touchpoint-actions">
                                       <button 
-                                        className="touchpoint-edit-btn" 
-                                        title="Edit touchpoint"
+                                        className="touchpoint-edit-btn"
                                         onClick={() => openEditTouchpoint(touchpoint)}
+                                        title="Edit touchpoint"
                                       >
                                         ✏️
                                       </button>
                                       <button 
-                                        className="touchpoint-delete-btn" 
-                                        title="Delete touchpoint"
+                                        className="touchpoint-delete-btn"
                                         onClick={() => deleteTouchpoint(touchpoint.id)}
+                                        title="Delete touchpoint"
                                       >
                                         🗑️
                                       </button>
@@ -1465,8 +1496,7 @@ function App() {
                                 </div>
                               </div>
                             ))
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
