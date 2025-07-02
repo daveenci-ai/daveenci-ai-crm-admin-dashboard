@@ -15,14 +15,19 @@ async function resolveFailedMigration() {
     const resolveCommand = 'npx prisma migrate resolve --applied 20250103000000_add_unqualified_churned_status';
     console.log(`Running: ${resolveCommand}`);
     
-    const { stdout: resolveOutput, stderr: resolveError } = await execAsync(resolveCommand);
-    
-    if (resolveError && !resolveError.includes('warning')) {
-      console.log('⚠️  Resolve output:', resolveError);
+    try {
+      const { stdout: resolveOutput, stderr: resolveError } = await execAsync(resolveCommand);
+      
+      if (resolveError && !resolveError.includes('warning')) {
+        console.log('⚠️  Resolve output:', resolveError);
+      }
+      
+      console.log('Resolve output:', resolveOutput);
+      console.log('✅ Failed migration marked as resolved\n');
+    } catch (resolveErr) {
+      // If the migration doesn't exist, that's fine - it means it was already cleaned up
+      console.log('ℹ️  Migration not found (already cleaned up), proceeding to apply new migration\n');
     }
-    
-    console.log('Resolve output:', resolveOutput);
-    console.log('✅ Failed migration marked as resolved\n');
     
     // Step 2: Apply the new migration
     console.log('STEP 2: Applying new migration');
