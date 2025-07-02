@@ -550,6 +550,97 @@ body {
   color: #94a3b8;
 }
 
+/* Expanded Contact Layout */
+.contact-info-expanded {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.contact-details-expanded {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.contact-status-line {
+  margin-bottom: 2px;
+}
+
+.status-badge-inline {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contact-name-line {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.contact-email-line {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.contact-phone-line {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.contact-created-line {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+/* Recent Touchpoints */
+.recent-touchpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.touchpoint-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 3px 0;
+}
+
+.touchpoint-date-short {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 35px;
+  flex-shrink: 0;
+}
+
+.touchpoint-text-short {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.no-touchpoints {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 8px 0;
+}
+
 .company-info {
   display: flex;
   align-items: center;
@@ -664,6 +755,22 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.contact-header-meta {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 8px;
+  padding-right: 4px;
+}
+
+.contact-header-meta .source-tag,
+.contact-header-meta .created-date {
+  display: flex;
+  align-items: center;
 }
 
 .edit-icon-btn, .delete-icon-btn {
@@ -934,6 +1041,17 @@ body {
   margin-bottom: 16px;
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.touchpoint-form .form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.touchpoint-form .form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 .touchpoint-form .form-group {

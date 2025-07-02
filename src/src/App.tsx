@@ -933,16 +933,16 @@ function App() {
                 <div className="column-section">
                   <div className="column-header">
                     <h3>Recent Touchpoints</h3>
-                    <span className="column-subtitle">Excluding New Contacts</span>
+                    <span className="column-subtitle">All Recent Activity</span>
                   </div>
                   <div className="column-content">
-                    {recentTouchpointsExcludingNew.length === 0 ? (
+                    {recentTouchpoints.length === 0 ? (
                       <div className="empty-state-small">
                         <p>No recent touchpoints</p>
                         <span>Interactions will appear here</span>
                       </div>
                     ) : (
-                      recentTouchpointsExcludingNew.slice(0, 5).map((touchpoint) => (
+                      recentTouchpoints.slice(0, 5).map((touchpoint) => (
                         <div key={touchpoint.id} className="touchpoint-item-small">
                           <div 
                             className="touchpoint-icon-small"
@@ -1169,15 +1169,15 @@ function App() {
                   <table>
                     <thead>
                       <tr>
-                        <th>Status</th>
                         <th>Contact</th>
-                        <th>Last Touchpoint</th>
+                        <th>Recent Touchpoints</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredContacts.map(contact => {
-                        const lastTouchpoint = getLastTouchpoint(contact);
-                        const formattedTouchpoint = formatLastTouchpoint(lastTouchpoint);
+                        const recentTouchpoints = contact.touchpoints
+                          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                          .slice(0, 2);
                         
                         return (
                           <tr 
@@ -1186,30 +1186,47 @@ function App() {
                             onClick={() => setSelectedContact(contact)}
                           >
                             <td>
-                              <span 
-                                className="status-badge"
-                                style={{ backgroundColor: getStatusColor(contact.status) }}
-                              >
-                                {getStatusLabel(contact.status)}
-                              </span>
-                            </td>
-                            <td>
-                              <div className="contact-info">
+                              <div className="contact-info-expanded">
                                 <div className="contact-avatar">
                                   {contact.name.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="contact-details">
-                                  <div className="contact-name">{contact.name}</div>
-                                  <div className="contact-email">{contact.primaryEmail || contact.email}</div>
-                                  <div className="contact-phone">{contact.primaryPhone || contact.phone || 'No phone'}</div>
+                                <div className="contact-details-expanded">
+                                  <div className="contact-status-line">
+                                    <span 
+                                      className="status-badge-inline"
+                                      style={{ backgroundColor: getStatusColor(contact.status) }}
+                                    >
+                                      {getStatusLabel(contact.status)}
+                                    </span>
+                                  </div>
+                                  <div className="contact-name-line">{contact.name}</div>
+                                  <div className="contact-email-line">{contact.primaryEmail || contact.email}</div>
+                                  <div className="contact-phone-line">{contact.primaryPhone || contact.phone || 'No phone'}</div>
+                                  <div className="contact-created-line">Added: {formatDate(contact.createdAt)}</div>
                                 </div>
                               </div>
                             </td>
                             <td>
-                              <div className="touchpoint-info">
-                                <div className="touchpoint-date">{formattedTouchpoint.date}</div>
-                                {formattedTouchpoint.text && (
-                                  <div className="touchpoint-text">{formattedTouchpoint.text}</div>
+                              <div className="recent-touchpoints">
+                                {recentTouchpoints.length === 0 ? (
+                                  <div className="no-touchpoints">No activity</div>
+                                ) : (
+                                  recentTouchpoints.map((touchpoint, index) => (
+                                    <div key={touchpoint.id} className="touchpoint-line">
+                                      <span className="touchpoint-date-short">
+                                        {new Date(touchpoint.createdAt).toLocaleDateString('en-US', {
+                                          month: 'short',
+                                          day: 'numeric'
+                                        })}
+                                      </span>
+                                      <span className="touchpoint-text-short">
+                                        {touchpoint.note.length > 40 ? 
+                                          `${touchpoint.note.substring(0, 40)}...` : 
+                                          touchpoint.note
+                                        }
+                                      </span>
+                                    </div>
+                                  ))
                                 )}
                               </div>
                             </td>
@@ -1278,6 +1295,13 @@ function App() {
                         </button>
                       </div>
                     </div>
+                    
+                    <div className="contact-header-meta">
+                      {selectedContact.source && (
+                        <span className="source-tag">Source: {selectedContact.source}</span>
+                      )}
+                      <span className="created-date">Added: {formatDate(selectedContact.createdAt)}</span>
+                    </div>
 
                     <div className="contact-details-content">
                       {/* Company and Address */}
@@ -1304,13 +1328,6 @@ function App() {
                             <p>{selectedContact.address}</p>
                           </div>
                         )}
-                        
-                        <div className="crm-meta">
-                          {selectedContact.source && (
-                            <span className="source-tag">Source: {selectedContact.source}</span>
-                          )}
-                          <span className="created-date">Added: {formatDate(selectedContact.createdAt)}</span>
-                        </div>
                       </div>
 
                       {/* Notes Section */}
@@ -1641,34 +1658,36 @@ function App() {
               
               <form onSubmit={handleTouchpointSubmit} className="touchpoint-form">
                 <div className="form-section">
-                  <div className="form-group">
-                    <label>Touchpoint Type *</label>
-                    <select
-                      value={touchpointData.source}
-                      onChange={(e) => setTouchpointData({ 
-                        ...touchpointData, 
-                        source: e.target.value as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER'
-                      })}
-                      required
-                    >
-                      <option value="MANUAL">📝 Manual Note</option>
-                      <option value="EMAIL">📧 Email</option>
-                      <option value="SMS">💬 SMS</option>
-                      <option value="PHONE">📞 Phone Call</option>
-                      <option value="IN_PERSON">👥 In Person</option>
-                      <option value="EVENT">🎯 Event</option>
-                      <option value="OTHER">📋 Other</option>
-                    </select>
-                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Touchpoint Type *</label>
+                      <select
+                        value={touchpointData.source}
+                        onChange={(e) => setTouchpointData({ 
+                          ...touchpointData, 
+                          source: e.target.value as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER'
+                        })}
+                        required
+                      >
+                        <option value="MANUAL">📝 Manual Note</option>
+                        <option value="EMAIL">📧 Email</option>
+                        <option value="SMS">💬 SMS</option>
+                        <option value="PHONE">📞 Phone Call</option>
+                        <option value="IN_PERSON">👥 In Person</option>
+                        <option value="EVENT">🎯 Event</option>
+                        <option value="OTHER">📋 Other</option>
+                      </select>
+                    </div>
 
-                  <div className="form-group">
-                    <label>Date *</label>
-                    <input
-                      type="date"
-                      value={touchpointData.date}
-                      onChange={(e) => setTouchpointData({ ...touchpointData, date: e.target.value })}
-                      required
-                    />
+                    <div className="form-group">
+                      <label>Date *</label>
+                      <input
+                        type="date"
+                        value={touchpointData.date}
+                        onChange={(e) => setTouchpointData({ ...touchpointData, date: e.target.value })}
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="form-group">
@@ -1677,7 +1696,7 @@ function App() {
                       value={touchpointData.note}
                       onChange={(e) => setTouchpointData({ ...touchpointData, note: e.target.value })}
                       required
-                      rows={4}
+                      rows={6}
                       placeholder="Describe the interaction with this contact..."
                     />
                   </div>
