@@ -125,6 +125,13 @@ function App() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingContactId, setEditingContactId] = useState<number | null>(null);
 
+  // Touchpoint form state
+  const [showTouchpointForm, setShowTouchpointForm] = useState(false);
+  const [touchpointData, setTouchpointData] = useState({
+    note: '',
+    source: 'MANUAL' as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER'
+  });
+
   useEffect(() => {
     // Check for stored auth token on app load
     const token = localStorage.getItem('authToken');
@@ -333,6 +340,58 @@ function App() {
   const openCreateForm = () => {
     resetForm();
     setShowCreateForm(true);
+  };
+
+  const createTouchpoint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedContact) return;
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/contacts/${selectedContact.id}/touchpoints`, touchpointData);
+      
+      // Update the contact's touchpoints in the local state
+      const updatedContact = {
+        ...selectedContact,
+        touchpoints: [response.data, ...selectedContact.touchpoints]
+      };
+      
+      setSelectedContact(updatedContact);
+      setContacts(contacts.map(c => c.id === selectedContact.id ? updatedContact : c));
+      
+      // Reset touchpoint form
+      setTouchpointData({ note: '', source: 'MANUAL' });
+      setShowTouchpointForm(false);
+      
+      // Refresh recent touchpoints
+      fetchRecentTouchpoints();
+    } catch (err) {
+      setError('Failed to create touchpoint');
+      console.error('Error creating touchpoint:', err);
+    }
+  };
+
+  const deleteTouchpoint = async (touchpointId: number) => {
+    if (!selectedContact || !window.confirm('Are you sure you want to delete this touchpoint?')) return;
+    
+    try {
+      await axios.delete(`${API_BASE_URL}/touchpoints/${touchpointId}`);
+      
+      // Update the contact's touchpoints in the local state
+      const updatedContact = {
+        ...selectedContact,
+        touchpoints: selectedContact.touchpoints.filter(t => t.id !== touchpointId)
+      };
+      
+      setSelectedContact(updatedContact);
+      setContacts(contacts.map(c => c.id === selectedContact.id ? updatedContact : c));
+      
+      // Refresh recent touchpoints
+      fetchRecentTouchpoints();
+    } catch (err) {
+      setError('Failed to delete touchpoint');
+      console.error('Error deleting touchpoint:', err);
+    }
   };
 
   const deleteContact = async (contactId: number) => {
@@ -1138,7 +1197,12 @@ function App() {
                         >
                           {getStatusLabel(selectedContact.status)}
                         </span>
-                        <button className="edit-btn">✏️ Edit</button>
+                        <button 
+                          className="edit-btn"
+                          onClick={() => openEditForm(selectedContact)}
+                        >
+                          ✏️ Edit
+                        </button>
                         <button 
                           className="delete-btn"
                           onClick={() => deleteContact(selectedContact.id)}
@@ -1183,7 +1247,7 @@ function App() {
                       </div>
 
                       {/* Notes Section */}
-                      {selectedContact.notes && (
+                      {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
                         <div className="notes-section">
                           <h4>📝 Notes</h4>
                           <p>{selectedContact.notes}</p>
@@ -1194,7 +1258,12 @@ function App() {
                       <div className="touchpoints-section">
                         <div className="touchpoints-header">
                           <h3>💬 Touchpoints ({selectedContact.touchpoints.length})</h3>
-                          <button className="add-touchpoint-btn">+ Add Touchpoint</button>
+                          <button 
+                            className="add-touchpoint-btn"
+                            onClick={() => setShowTouchpointForm(true)}
+                          >
+                            + Add Touchpoint
+                          </button>
                         </div>
                         
                         <div className="touchpoints-list">
@@ -1221,8 +1290,13 @@ function App() {
                                       {formatActivityTime(touchpoint.createdAt)}
                                     </span>
                                     <div className="touchpoint-actions">
-                                      <button className="touchpoint-edit-btn" title="Edit touchpoint">✏️</button>
-                                      <button className="touchpoint-delete-btn" title="Delete touchpoint">🗑️</button>
+                                      <button 
+                                        className="touchpoint-delete-btn" 
+                                        title="Delete touchpoint"
+                                        onClick={() => deleteTouchpoint(touchpoint.id)}
+                                      >
+                                        🗑️
+                                      </button>
                                     </div>
                                   </div>
                                   <p className="touchpoint-note">{touchpoint.note}</p>
@@ -1273,7 +1347,7 @@ function App() {
           <div className="modal-overlay" onClick={() => setShowCreateForm(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>Add New Contact</h2>
+                <h2>{isEditMode ? 'Edit Contact' : 'Add New Contact'}</h2>
                 <button 
                   className="close-btn"
                   onClick={() => setShowCreateForm(false)}
@@ -1282,7 +1356,7 @@ function App() {
                 </button>
               </div>
               
-              <form onSubmit={createContact} className="contact-form">
+              <form onSubmit={handleFormSubmit} className="contact-form">
                 {/* Basic Information Section */}
                 <div className="form-section">
                   <h3 className="form-section-title">Basic Information</h3>
@@ -1469,7 +1543,72 @@ function App() {
                     Cancel
                   </button>
                   <button type="submit" className="submit-btn">
-                    Add Contact
+                    {isEditMode ? 'Update Contact' : 'Add Contact'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add Touchpoint Form Modal */}
+        {showTouchpointForm && selectedContact && (
+          <div className="modal-overlay" onClick={() => setShowTouchpointForm(false)}>
+            <div className="modal-content touchpoint-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Add Touchpoint for {selectedContact.name}</h2>
+                <button 
+                  className="close-btn"
+                  onClick={() => setShowTouchpointForm(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form onSubmit={createTouchpoint} className="touchpoint-form">
+                <div className="form-section">
+                  <div className="form-group">
+                    <label>Touchpoint Type *</label>
+                    <select
+                      value={touchpointData.source}
+                      onChange={(e) => setTouchpointData({ 
+                        ...touchpointData, 
+                        source: e.target.value as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER'
+                      })}
+                      required
+                    >
+                      <option value="MANUAL">📝 Manual Note</option>
+                      <option value="EMAIL">📧 Email</option>
+                      <option value="SMS">💬 SMS</option>
+                      <option value="PHONE">📞 Phone Call</option>
+                      <option value="IN_PERSON">👥 In Person</option>
+                      <option value="EVENT">🎯 Event</option>
+                      <option value="OTHER">📋 Other</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Notes *</label>
+                    <textarea
+                      value={touchpointData.note}
+                      onChange={(e) => setTouchpointData({ ...touchpointData, note: e.target.value })}
+                      required
+                      rows={4}
+                      placeholder="Describe the interaction with this contact..."
+                    />
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button 
+                    type="button" 
+                    className="cancel-btn"
+                    onClick={() => setShowTouchpointForm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="submit-btn">
+                    Add Touchpoint
                   </button>
                 </div>
               </form>

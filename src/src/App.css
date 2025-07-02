@@ -698,39 +698,39 @@ body {
 
 /* New Contact Details Layout */
 .contact-basic-info {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .company-section {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .company-section h3 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: #1e293b;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .industry-tag {
   display: inline-block;
-  padding: 4px 8px;
+  padding: 3px 8px;
   background: #f1f5f9;
   color: #64748b;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .website-link {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .website-link a {
   color: #3b82f6;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .website-link a:hover {
@@ -738,7 +738,233 @@ body {
 }
 
 .address-section {
+  margin-bottom: 12px;
+}
+
+.address-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.address-section p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.crm-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+.source-tag, .created-date {
+  display: flex;
+  align-items: center;
+}
+
+.notes-section {
   margin-bottom: 16px;
+}
+
+.notes-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.notes-section p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Touchpoints Section */
+.touchpoints-section {
+  margin-top: 16px;
+}
+
+.touchpoints-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.touchpoints-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.add-touchpoint-btn {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-touchpoint-btn:hover {
+  background: #5a67d8;
+}
+
+.touchpoints-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.touchpoint-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: white;
+}
+
+.touchpoint-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.touchpoint-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.touchpoint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.touchpoint-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  text-transform: capitalize;
+}
+
+.touchpoint-time {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.touchpoint-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.touchpoint-delete-btn {
+  padding: 2px 6px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.touchpoint-delete-btn:hover {
+  opacity: 1;
+  background: #fecaca;
+}
+
+.touchpoint-note {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.touchpoints-empty {
+  text-align: center;
+  padding: 24px;
+  color: #94a3b8;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.touchpoints-empty p {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.touchpoints-empty span {
+  font-size: 12px;
+}
+
+/* Touchpoint Modal */
+.touchpoint-modal {
+  max-width: 500px;
+}
+
+.touchpoint-form {
+  padding: 0 24px 24px;
+}
+
+.touchpoint-form .form-section {
+  margin-bottom: 16px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.touchpoint-form .form-group {
+  margin-bottom: 16px;
+}
+
+.touchpoint-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.touchpoint-form select,
+.touchpoint-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.touchpoint-form select:focus,
+.touchpoint-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.touchpoint-form textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 .address-section h4 {
