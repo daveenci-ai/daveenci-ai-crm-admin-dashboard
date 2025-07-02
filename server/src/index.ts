@@ -100,8 +100,13 @@ app.get('/api/contacts', requireAuth, async (req, res) => {
 app.get('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
-    const contact = await prisma.contact.findUnique({
-      where: { id: contactId },
+    const userId = (req as AuthenticatedRequest).user.id;
+    
+    const contact = await prisma.contact.findFirst({
+      where: { 
+        id: contactId,
+        userId: userId // Ensure contact belongs to authenticated user
+      },
       include: { 
         touchpoints: {
           orderBy: { createdAt: 'desc' }
@@ -172,7 +177,20 @@ app.post('/api/contacts', requireAuth, async (req, res) => {
 app.put('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
+    const userId = (req as AuthenticatedRequest).user.id;
     const { name, email, phone, company, source, status, notes } = req.body;
+    
+    // First verify the contact belongs to the authenticated user
+    const existingContact = await prisma.contact.findFirst({
+      where: { 
+        id: contactId,
+        userId: userId
+      }
+    });
+    
+    if (!existingContact) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
     
     const updatedContact = await prisma.contact.update({
       where: { id: contactId },
@@ -212,6 +230,19 @@ app.put('/api/contacts/:id', requireAuth, async (req, res) => {
 app.delete('/api/contacts/:id', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
+    const userId = (req as AuthenticatedRequest).user.id;
+    
+    // First verify the contact belongs to the authenticated user
+    const existingContact = await prisma.contact.findFirst({
+      where: { 
+        id: contactId,
+        userId: userId
+      }
+    });
+    
+    if (!existingContact) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
     
     // Delete associated touchpoints first
     await prisma.touchpoint.deleteMany({
@@ -234,10 +265,23 @@ app.delete('/api/contacts/:id', requireAuth, async (req, res) => {
 app.post('/api/contacts/:id/touchpoints', requireAuth, async (req, res) => {
   try {
     const contactId = parseInt(req.params.id);
+    const userId = (req as AuthenticatedRequest).user.id;
     const { note, source = 'MANUAL' } = req.body;
     
     if (!note) {
       return res.status(400).json({ error: 'Note is required' });
+    }
+    
+    // First verify the contact belongs to the authenticated user
+    const existingContact = await prisma.contact.findFirst({
+      where: { 
+        id: contactId,
+        userId: userId
+      }
+    });
+    
+    if (!existingContact) {
+      return res.status(404).json({ error: 'Contact not found' });
     }
     
     const touchpoint = await prisma.touchpoint.create({
