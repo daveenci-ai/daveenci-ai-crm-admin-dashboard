@@ -12,6 +12,7 @@
     "db:backup": "node scripts/backup-database.js",
     "db:verify": "node scripts/verify-migration.js",
     "db:migrate-safe": "node scripts/run-migration.js",
+    "db:migrate-resolve": "node scripts/resolve-failed-migration.js",
     "db:rollback": "node scripts/rollback-migration.js",
     "test": "node scripts/test-api-endpoints.js",
     "test:api": "node scripts/test-api-endpoints.js"
