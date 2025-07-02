@@ -72,6 +72,7 @@ function App() {
   // Dashboard breakdown filters
   const [breakdownType, setBreakdownType] = useState<string>('Industry');
   const [breakdownPeriod, setBreakdownPeriod] = useState<string>('Last 28 Days');
+  const [breakdownContactFilter, setBreakdownContactFilter] = useState<string>('All Contacts');
 
   // Form state for creating contacts
   const [formData, setFormData] = useState({
@@ -300,6 +301,27 @@ function App() {
   const followUpsNeeded = contacts.filter(contact => contact.status === 'LEAD' || contact.status === 'OPPORTUNITY').length;
   const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
+  // Calculate funnel data
+  const prospectCount = contacts.filter(c => c.status === 'PROSPECT').length;
+  const leadCount = contacts.filter(c => c.status === 'LEAD').length;
+  const opportunityCount = contacts.filter(c => c.status === 'OPPORTUNITY').length;
+  const clientCount = contacts.filter(c => c.status === 'CLIENT').length;
+
+  // Calculate conversion rates between stages
+  const prospectToLeadRate = prospectCount > 0 ? Math.round((leadCount / (prospectCount + leadCount)) * 100) : 0;
+  const leadToOpportunityRate = leadCount > 0 ? Math.round((opportunityCount / (leadCount + opportunityCount)) * 100) : 0;
+  const opportunityToClientRate = opportunityCount > 0 ? Math.round((clientCount / (opportunityCount + clientCount)) * 100) : 0;
+
+  // Calculate new contacts (last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const newContacts = contacts.filter(contact => new Date(contact.createdAt) >= sevenDaysAgo);
+
+  // Filter recent touchpoints to exclude those from new contacts
+  const recentTouchpointsExcludingNew = recentTouchpoints.filter(touchpoint => 
+    !newContacts.some(newContact => newContact.id === touchpoint.contact.id)
+  );
+
   // Filter contacts
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -397,54 +419,172 @@ function App() {
               <p>Overview of your CRM performance and activities</p>
             </div>
 
-            {/* Totals Section */}
+            {/* Sales Funnel Section */}
             <div className="dashboard-section">
-              <h2>Totals</h2>
-              <div className="totals-grid">
-                <div className="total-card">
-                  <div className="total-icon prospects">📊</div>
-                  <div className="total-content">
-                    <h3>Total Prospects</h3>
-                    <div className="total-number">{contacts.filter(c => c.status === 'PROSPECT').length}</div>
-                    <div className="total-growth">
-                      <span className="growth-label">28 Days Growth</span>
-                      <span className="growth-value positive">+{Math.floor(Math.random() * 15)}%</span>
+              <h2>Sales Funnel</h2>
+              <div className="funnel-container">
+                <div className="funnel-stage prospects" onClick={() => setCurrentView('contacts')}>
+                  <div className="funnel-content">
+                    <div className="funnel-icon">👥</div>
+                    <div className="funnel-number">{prospectCount}</div>
+                    <div className="funnel-label">Prospects</div>
+                  </div>
+                  {leadCount > 0 && <div className="funnel-arrow">→</div>}
+                </div>
+
+                {leadCount > 0 && (
+                  <div className="funnel-stage leads" onClick={() => setCurrentView('contacts')}>
+                    <div className="funnel-content">
+                      <div className="funnel-icon">🎯</div>
+                      <div className="funnel-number">{leadCount}</div>
+                      <div className="funnel-label">Leads</div>
+                      <div className="funnel-conversion">{prospectToLeadRate}%</div>
                     </div>
+                    {opportunityCount > 0 && <div className="funnel-arrow">→</div>}
+                  </div>
+                )}
+
+                {opportunityCount > 0 && (
+                  <div className="funnel-stage opportunities" onClick={() => setCurrentView('contacts')}>
+                    <div className="funnel-content">
+                      <div className="funnel-icon">⚡</div>
+                      <div className="funnel-number">{opportunityCount}</div>
+                      <div className="funnel-label">Opportunities</div>
+                      <div className="funnel-conversion">{leadToOpportunityRate}%</div>
+                    </div>
+                    {clientCount > 0 && <div className="funnel-arrow">→</div>}
+                  </div>
+                )}
+
+                {clientCount > 0 && (
+                  <div className="funnel-stage clients" onClick={() => setCurrentView('contacts')}>
+                    <div className="funnel-content">
+                      <div className="funnel-icon">👑</div>
+                      <div className="funnel-number">{clientCount}</div>
+                      <div className="funnel-label">Clients</div>
+                      <div className="funnel-conversion">{opportunityToClientRate}%</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Three Column Section */}
+            <div className="dashboard-section">
+              <div className="three-column-grid">
+                {/* New Contacts Column */}
+                <div className="column-section">
+                  <div className="column-header">
+                    <h3>New Contacts</h3>
+                    <span className="column-subtitle">Last 7 Days</span>
+                  </div>
+                  <div className="column-content">
+                    {newContacts.length === 0 ? (
+                      <div className="empty-state-small">
+                        <p>No new contacts this week</p>
+                        <span>Add contacts to see them here</span>
+                      </div>
+                    ) : (
+                      newContacts.slice(0, 5).map((contact) => (
+                        <div key={contact.id} className="contact-item-small">
+                          <div className="contact-avatar-small">
+                            {contact.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="contact-info-small">
+                            <div className="contact-name-small">{contact.name}</div>
+                            <div className="contact-company-small">{contact.company || 'No company'}</div>
+                            <div className="contact-date-small">{formatDate(contact.createdAt)}</div>
+                          </div>
+                          <div 
+                            className="status-badge-small"
+                            style={{ backgroundColor: getStatusColor(contact.status) }}
+                          >
+                            {getStatusLabel(contact.status)}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
-                <div className="total-card">
-                  <div className="total-icon leads">🎯</div>
-                  <div className="total-content">
-                    <h3>Total Leads</h3>
-                    <div className="total-number">{contacts.filter(c => c.status === 'LEAD').length}</div>
-                    <div className="total-growth">
-                      <span className="growth-label">WoW Growth</span>
-                      <span className="growth-value positive">+{Math.floor(Math.random() * 25)}%</span>
-                    </div>
+                {/* Recent Touchpoints Column */}
+                <div className="column-section">
+                  <div className="column-header">
+                    <h3>Recent Touchpoints</h3>
+                    <span className="column-subtitle">Excluding New Contacts</span>
+                  </div>
+                  <div className="column-content">
+                    {recentTouchpointsExcludingNew.length === 0 ? (
+                      <div className="empty-state-small">
+                        <p>No recent touchpoints</p>
+                        <span>Interactions will appear here</span>
+                      </div>
+                    ) : (
+                      recentTouchpointsExcludingNew.slice(0, 5).map((touchpoint) => (
+                        <div key={touchpoint.id} className="touchpoint-item-small">
+                          <div 
+                            className="touchpoint-icon-small"
+                            style={{ backgroundColor: getTouchpointIconColor(touchpoint.source) }}
+                          >
+                            {getTouchpointIcon(touchpoint.source)}
+                          </div>
+                          <div className="touchpoint-info-small">
+                            <div className="touchpoint-contact-small">{touchpoint.contact.name}</div>
+                            <div className="touchpoint-note-small">
+                              {touchpoint.note.length > 50 ? 
+                                `${touchpoint.note.substring(0, 50)}...` : 
+                                touchpoint.note
+                              }
+                            </div>
+                            <div className="touchpoint-time-small">{formatActivityTime(touchpoint.createdAt)}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
-                <div className="total-card">
-                  <div className="total-icon opportunities">⚡</div>
-                  <div className="total-content">
-                    <h3>Opportunities</h3>
-                    <div className="total-number">{contacts.filter(c => c.status === 'OPPORTUNITY').length}</div>
-                    <div className="total-growth">
-                      <span className="growth-label">WoW Growth</span>
-                      <span className="growth-value positive">+{Math.floor(Math.random() * 10)}%</span>
-                    </div>
+                {/* Upcoming Events Column */}
+                <div className="column-section">
+                  <div className="column-header">
+                    <h3>Upcoming Events</h3>
+                    <span className="column-subtitle">Next 7 Days</span>
                   </div>
-                </div>
+                  <div className="column-content">
+                    <div className="event-item-small">
+                      <div className="event-date-small">
+                        <div className="event-day">23</div>
+                        <div className="event-month">Jan</div>
+                      </div>
+                      <div className="event-info-small">
+                        <div className="event-title-small">Meeting with Sarah Johnson</div>
+                        <div className="event-location-small">📍 Conference Room A</div>
+                        <div className="event-time-small">⏰ 2:00 PM - 3:00 PM</div>
+                      </div>
+                    </div>
 
-                <div className="total-card">
-                  <div className="total-icon clients">👑</div>
-                  <div className="total-content">
-                    <h3>Clients</h3>
-                    <div className="total-number">{convertedLeads}</div>
-                    <div className="total-growth">
-                      <span className="growth-label">WoW Growth</span>
-                      <span className="growth-value positive">+{Math.floor(Math.random() * 8)}%</span>
+                    <div className="event-item-small">
+                      <div className="event-date-small">
+                        <div className="event-day">24</div>
+                        <div className="event-month">Jan</div>
+                      </div>
+                      <div className="event-info-small">
+                        <div className="event-title-small">Call with Michael Chen</div>
+                        <div className="event-location-small">📞 Phone Call</div>
+                        <div className="event-time-small">⏰ 10:00 AM - 11:00 AM</div>
+                      </div>
+                    </div>
+
+                    <div className="event-item-small">
+                      <div className="event-date-small">
+                        <div className="event-day">25</div>
+                        <div className="event-month">Jan</div>
+                      </div>
+                      <div className="event-info-small">
+                        <div className="event-title-small">Demo for Emily Rodriguez</div>
+                        <div className="event-location-small">💻 Virtual Meeting</div>
+                        <div className="event-time-small">⏰ 3:30 PM - 4:30 PM</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -535,6 +675,16 @@ function App() {
                 <h2>Breakdown</h2>
                 <div className="breakdown-filters">
                   <select 
+                    value={breakdownContactFilter} 
+                    onChange={(e) => setBreakdownContactFilter(e.target.value)}
+                  >
+                    <option value="All Contacts">All Contacts</option>
+                    <option value="Prospects">Prospects</option>
+                    <option value="Leads">Leads</option>
+                    <option value="Opportunities">Opportunities</option>
+                    <option value="Clients">Clients</option>
+                  </select>
+                  <select 
                     value={breakdownType} 
                     onChange={(e) => setBreakdownType(e.target.value)}
                   >
@@ -561,7 +711,7 @@ function App() {
                   <div className="chart-placeholder">
                     <div className="chart-icon">📊</div>
                     <p>Breakdown Chart</p>
-                    <span>Visual representation of {breakdownType.toLowerCase()} data for {breakdownPeriod.toLowerCase()}</span>
+                    <span>Visual representation of {breakdownContactFilter.toLowerCase()} {breakdownType.toLowerCase()} data for {breakdownPeriod.toLowerCase()}</span>
                   </div>
                 </div>
                 

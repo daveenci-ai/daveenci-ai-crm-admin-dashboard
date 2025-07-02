@@ -1224,3 +1224,394 @@ body {
     flex-direction: column;
   }
 }
+
+/* Funnel Styles */
+.funnel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  gap: 16px;
+  overflow-x: auto;
+}
+
+.funnel-stage {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.funnel-stage:hover {
+  transform: scale(1.05);
+}
+
+.funnel-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px;
+  min-width: 120px;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.funnel-stage.prospects .funnel-content {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+}
+
+.funnel-stage.leads .funnel-content {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+}
+
+.funnel-stage.opportunities .funnel-content {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #166534;
+}
+
+.funnel-stage.clients .funnel-content {
+  background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+  color: #7c3aed;
+}
+
+.funnel-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.funnel-number {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.funnel-label {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.funnel-conversion {
+  font-size: 11px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.funnel-arrow {
+  font-size: 24px;
+  color: #94a3b8;
+  font-weight: bold;
+}
+
+/* Three Column Grid */
+.three-column-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+}
+
+.column-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.column-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.column-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.column-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.column-content {
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* New Contacts Items */
+.contact-item-small {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.contact-item-small:last-child {
+  border-bottom: none;
+}
+
+.contact-item-small:hover {
+  background: #f8fafc;
+}
+
+.contact-avatar-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.contact-info-small {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name-small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.contact-company-small {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.contact-date-small {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.status-badge-small {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* Recent Touchpoints Items */
+.touchpoint-item-small {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.touchpoint-item-small:last-child {
+  border-bottom: none;
+}
+
+.touchpoint-item-small:hover {
+  background: #f8fafc;
+}
+
+.touchpoint-icon-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.touchpoint-info-small {
+  flex: 1;
+  min-width: 0;
+}
+
+.touchpoint-contact-small {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.touchpoint-note-small {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.touchpoint-time-small {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+/* Upcoming Events Items */
+.event-item-small {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.event-item-small:last-child {
+  border-bottom: none;
+}
+
+.event-item-small:hover {
+  background: #f8fafc;
+}
+
+.event-date-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.event-day {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.event-month {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.event-info-small {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-title-small {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.event-location-small {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.event-time-small {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+/* Empty State Small */
+.empty-state-small {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.empty-state-small p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.empty-state-small span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Responsive Design for New Components */
+@media (max-width: 1024px) {
+  .three-column-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .funnel-container {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .funnel-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .funnel-container {
+    padding: 20px 16px;
+  }
+  
+  .funnel-content {
+    min-width: 100px;
+    padding: 20px 16px;
+  }
+  
+  .funnel-number {
+    font-size: 24px;
+  }
+  
+  .funnel-icon {
+    font-size: 28px;
+  }
+  
+  .column-header {
+    padding: 16px;
+  }
+  
+  .contact-item-small,
+  .touchpoint-item-small,
+  .event-item-small {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .funnel-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .funnel-content {
+    min-width: auto;
+    width: 100%;
+  }
+}
