@@ -1352,10 +1352,10 @@ function App() {
                     <div className="form-group">
                       <label>Website</label>
                       <input
-                        type="url"
+                        type="text"
                         value={formData.website}
                         onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        placeholder="https://company.com"
+                        placeholder="company.com or https://company.com"
                       />
                     </div>
 
@@ -1401,12 +1401,12 @@ function App() {
                         value={formData.status}
                         onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                       >
-                        <option value="PROSPECT">New Prospect</option>
-                        <option value="LEAD">Contacted Lead</option>
-                        <option value="OPPORTUNITY">Qualified Opportunity</option>
-                        <option value="CLIENT">Converted Client</option>
-                        <option value="UNQUALIFIED">Unqualified Lead</option>
-                        <option value="CHURNED">Churned Client</option>
+                        <option value="PROSPECT">Prospect</option>
+                        <option value="LEAD">Lead</option>
+                        <option value="OPPORTUNITY">Opportunity</option>
+                        <option value="CLIENT">Client</option>
+                        <option value="UNQUALIFIED">Unqualified</option>
+                        <option value="CHURNED">Churned</option>
                       </select>
                     </div>
 

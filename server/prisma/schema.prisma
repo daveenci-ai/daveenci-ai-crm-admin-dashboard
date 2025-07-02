@@ -63,6 +63,8 @@ enum Status {
   LEAD
   OPPORTUNITY
   CLIENT
+  UNQUALIFIED
+  CHURNED
 
   @@map("status")
 }

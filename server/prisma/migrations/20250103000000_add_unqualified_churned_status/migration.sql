@@ -1,0 +1,3 @@
+-- Add UNQUALIFIED and CHURNED values to Status enum
+ALTER TYPE "Status" ADD VALUE 'UNQUALIFIED';
+ALTER TYPE "Status" ADD VALUE 'CHURNED'; 
