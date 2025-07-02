@@ -340,11 +340,6 @@ function App() {
     setShowCreateForm(true);
   };
 
-  const openCreateForm = () => {
-    resetForm();
-    setShowCreateForm(true);
-  };
-
   const createTouchpoint = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -542,77 +537,11 @@ function App() {
     }
   };
 
-  const getActivityTitle = (touchpoint: RecentTouchpoint) => {
-    const contactName = touchpoint.contact.name;
-    const company = touchpoint.contact.company;
-    
-    switch (touchpoint.source) {
-      case 'EMAIL':
-        return `Email sent to ${contactName}`;
-      case 'SMS':
-        return `SMS sent to ${contactName}`;
-      case 'PHONE':
-        return `Phone call with ${contactName}`;
-      case 'IN_PERSON':
-        return `In-person meeting with ${contactName}`;
-      case 'EVENT':
-        return `Event activity with ${contactName}`;
-      case 'MANUAL':
-        return `Manual note added for ${contactName}`;
-      case 'OTHER':
-        return `Activity logged for ${contactName}`;
-      default:
-        return `Touchpoint with ${contactName}`;
-    }
-  };
 
-  const getActivityDescription = (touchpoint: RecentTouchpoint) => {
-    // Return the first 100 characters of the note as description
-    if (touchpoint.note.length > 100) {
-      return touchpoint.note.substring(0, 100) + '...';
-    }
-    return touchpoint.note;
-  };
-
-  const getLastTouchpoint = (contact: Contact) => {
-    if (!contact.touchpoints || contact.touchpoints.length === 0) {
-      return null;
-    }
-    
-    // Return the most recent touchpoint
-    return contact.touchpoints.reduce((latest, current) => 
-      new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
-    );
-  };
-
-  const formatLastTouchpoint = (touchpoint: Touchpoint | null) => {
-    if (!touchpoint) {
-      return { date: 'No activity', text: '' };
-    }
-    
-    const date = new Date(touchpoint.createdAt);
-    const formattedDate = date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-    
-    const shortText = touchpoint.note.length > 30 ? 
-      touchpoint.note.substring(0, 30) + '...' : 
-      touchpoint.note;
-    
-    return { date: formattedDate, text: shortText };
-  };
 
   // Calculate dashboard stats
   const totalLeads = contacts.length;
-  const thisMonthLeads = contacts.filter(contact => {
-    const contactDate = new Date(contact.createdAt);
-    const now = new Date();
-    return contactDate.getMonth() === now.getMonth() && contactDate.getFullYear() === now.getFullYear();
-  }).length;
   const convertedLeads = contacts.filter(contact => contact.status === 'CLIENT').length;
-  const followUpsNeeded = contacts.filter(contact => contact.status === 'LEAD' || contact.status === 'OPPORTUNITY').length;
-  const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
   // Calculate funnel data
   const prospectCount = contacts.filter(c => c.status === 'PROSPECT').length;
@@ -622,10 +551,7 @@ function App() {
   const unqualifiedCount = contacts.filter(c => c.status === 'UNQUALIFIED').length;
   const churnedCount = contacts.filter(c => c.status === 'CHURNED').length;
 
-  // Calculate conversion rates between stages
-  const prospectToLeadRate = prospectCount > 0 ? Math.round((leadCount / (prospectCount + leadCount)) * 100) : 0;
-  const leadToOpportunityRate = leadCount > 0 ? Math.round((opportunityCount / (leadCount + opportunityCount)) * 100) : 0;
-  const opportunityToClientRate = opportunityCount > 0 ? Math.round((clientCount / (opportunityCount + clientCount)) * 100) : 0;
+
 
   // Calculate new contacts (last 7 days)
   const sevenDaysAgo = new Date();
@@ -668,10 +594,7 @@ function App() {
   const unqualifiedGrowth = unqualifiedCount > 0 ? Math.min(Math.round((newUnqualified28Days / unqualifiedCount) * 100), 100) : 0;
   const churnedGrowth = churnedCount > 0 ? Math.min(Math.round((newChurned28Days / churnedCount) * 100), 100) : 0;
 
-  // Filter recent touchpoints to exclude those from new contacts
-  const recentTouchpointsExcludingNew = recentTouchpoints.filter(touchpoint => 
-    !newContacts.some(newContact => newContact.id === touchpoint.contact.id)
-  );
+
 
   // Filter contacts
   const filteredContacts = contacts.filter(contact => {
