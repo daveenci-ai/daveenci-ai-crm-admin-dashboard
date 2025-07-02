@@ -8,13 +8,14 @@ async function resolveFailedMigration() {
   console.log('=====================================================\n');
   
   try {
-    // Step 1: Mark the failed migration as resolved
-    console.log('STEP 1: Marking failed migration as resolved');
-    console.log('--------------------------------------------');
+    // Step 1: Try to mark the failed migration as resolved
+    console.log('STEP 1: Attempting to resolve failed migration');
+    console.log('-----------------------------------------------');
     
     const resolveCommand = 'npx prisma migrate resolve --applied 20250103000000_add_unqualified_churned_status';
     console.log(`Running: ${resolveCommand}`);
     
+    let migrationResolved = false;
     try {
       const { stdout: resolveOutput, stderr: resolveError } = await execAsync(resolveCommand);
       
@@ -24,12 +25,51 @@ async function resolveFailedMigration() {
       
       console.log('Resolve output:', resolveOutput);
       console.log('✅ Failed migration marked as resolved\n');
+      migrationResolved = true;
     } catch (resolveErr) {
-      // If the migration doesn't exist, that's fine - it means it was already cleaned up
-      console.log('ℹ️  Migration not found (already cleaned up), proceeding to apply new migration\n');
+      console.log('⚠️  Could not resolve specific migration (file not found)');
+      console.log('🔄 Will attempt to reset migration state instead\n');
     }
     
-    // Step 2: Apply the new migration
+    // Step 2: If we couldn't resolve the specific migration, try to reset
+    if (!migrationResolved) {
+      console.log('STEP 1b: Resetting migration state');
+      console.log('----------------------------------');
+      
+      try {
+        // Try to reset the migration state to the last known good migration
+        const resetCommand = 'npx prisma migrate resolve --rolled-back 20250103000000_add_unqualified_churned_status';
+        console.log(`Running: ${resetCommand}`);
+        
+        const { stdout: resetOutput, stderr: resetError } = await execAsync(resetCommand);
+        
+        if (resetError && !resetError.includes('warning')) {
+          console.log('⚠️  Reset output:', resetError);
+        }
+        
+        console.log('Reset output:', resetOutput);
+        console.log('✅ Migration state reset\n');
+      } catch (resetErr) {
+        console.log('⚠️  Could not reset migration state, trying force approach\n');
+        
+        // As a last resort, try to manually update the database
+        console.log('STEP 1c: Force removing failed migration record');
+        console.log('---------------------------------------------');
+        
+        const forceCommand = `npx prisma db execute --stdin <<EOF
+DELETE FROM "_prisma_migrations" WHERE migration_name = '20250103000000_add_unqualified_churned_status';
+EOF`;
+        
+        try {
+          await execAsync(forceCommand);
+          console.log('✅ Forced removal of failed migration record\n');
+        } catch (forceErr) {
+          console.log('⚠️  Force removal failed, proceeding anyway\n');
+        }
+      }
+    }
+    
+    // Step 3: Apply the new migration
     console.log('STEP 2: Applying new migration');
     console.log('------------------------------');
     
@@ -42,7 +82,7 @@ async function resolveFailedMigration() {
     console.log('Migration output:', migrateOutput);
     console.log('✅ New migration applied successfully!\n');
     
-    // Step 3: Generate Prisma client
+    // Step 4: Generate Prisma client
     console.log('STEP 3: Regenerating Prisma client');
     console.log('-----------------------------------');
     await execAsync('npx prisma generate');
