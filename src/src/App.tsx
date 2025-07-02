@@ -127,9 +127,12 @@ function App() {
 
   // Touchpoint form state
   const [showTouchpointForm, setShowTouchpointForm] = useState(false);
+  const [isEditingTouchpoint, setIsEditingTouchpoint] = useState(false);
+  const [editingTouchpointId, setEditingTouchpointId] = useState<number | null>(null);
   const [touchpointData, setTouchpointData] = useState({
     note: '',
-    source: 'MANUAL' as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER'
+    source: 'MANUAL' as 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER',
+    date: new Date().toISOString().split('T')[0] // Default to today's date
   });
 
   useEffect(() => {
@@ -359,9 +362,7 @@ function App() {
       setSelectedContact(updatedContact);
       setContacts(contacts.map(c => c.id === selectedContact.id ? updatedContact : c));
       
-      // Reset touchpoint form
-      setTouchpointData({ note: '', source: 'MANUAL' });
-      setShowTouchpointForm(false);
+      resetTouchpointForm();
       
       // Refresh recent touchpoints
       fetchRecentTouchpoints();
@@ -369,6 +370,70 @@ function App() {
       setError('Failed to create touchpoint');
       console.error('Error creating touchpoint:', err);
     }
+  };
+
+  const updateTouchpoint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedContact || !editingTouchpointId) return;
+    
+    try {
+      const response = await axios.put(`${API_BASE_URL}/touchpoints/${editingTouchpointId}`, touchpointData);
+      
+      // Update the contact's touchpoints in the local state
+      const updatedContact = {
+        ...selectedContact,
+        touchpoints: selectedContact.touchpoints.map(t => 
+          t.id === editingTouchpointId ? response.data : t
+        )
+      };
+      
+      setSelectedContact(updatedContact);
+      setContacts(contacts.map(c => c.id === selectedContact.id ? updatedContact : c));
+      
+      resetTouchpointForm();
+      
+      // Refresh recent touchpoints
+      fetchRecentTouchpoints();
+    } catch (err) {
+      setError('Failed to update touchpoint');
+      console.error('Error updating touchpoint:', err);
+    }
+  };
+
+  const handleTouchpointSubmit = (e: React.FormEvent) => {
+    if (isEditingTouchpoint) {
+      updateTouchpoint(e);
+    } else {
+      createTouchpoint(e);
+    }
+  };
+
+  const resetTouchpointForm = () => {
+    setTouchpointData({ 
+      note: '', 
+      source: 'MANUAL',
+      date: new Date().toISOString().split('T')[0]
+    });
+    setShowTouchpointForm(false);
+    setIsEditingTouchpoint(false);
+    setEditingTouchpointId(null);
+  };
+
+  const openEditTouchpoint = (touchpoint: any) => {
+    setTouchpointData({
+      note: touchpoint.note,
+      source: touchpoint.source,
+      date: touchpoint.createdAt.split('T')[0] // Use the touchpoint's date
+    });
+    setIsEditingTouchpoint(true);
+    setEditingTouchpointId(touchpoint.id);
+    setShowTouchpointForm(true);
+  };
+
+  const openCreateTouchpoint = () => {
+    resetTouchpointForm();
+    setShowTouchpointForm(true);
   };
 
   const deleteTouchpoint = async (touchpointId: number) => {
@@ -1262,7 +1327,7 @@ function App() {
                           <h3>💬 Touchpoints ({selectedContact.touchpoints.length})</h3>
                           <button 
                             className="add-touchpoint-btn"
-                            onClick={() => setShowTouchpointForm(true)}
+                            onClick={openCreateTouchpoint}
                           >
                             + Add Touchpoint
                           </button>
@@ -1292,6 +1357,13 @@ function App() {
                                       {formatActivityTime(touchpoint.createdAt)}
                                     </span>
                                     <div className="touchpoint-actions">
+                                      <button 
+                                        className="touchpoint-edit-btn" 
+                                        title="Edit touchpoint"
+                                        onClick={() => openEditTouchpoint(touchpoint)}
+                                      >
+                                        ✏️
+                                      </button>
                                       <button 
                                         className="touchpoint-delete-btn" 
                                         title="Delete touchpoint"
@@ -1558,7 +1630,7 @@ function App() {
           <div className="modal-overlay" onClick={() => setShowTouchpointForm(false)}>
             <div className="modal-content touchpoint-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>Add Touchpoint for {selectedContact.name}</h2>
+                <h2>{isEditingTouchpoint ? 'Edit Touchpoint' : `Add Touchpoint for ${selectedContact.name}`}</h2>
                 <button 
                   className="close-btn"
                   onClick={() => setShowTouchpointForm(false)}
@@ -1567,7 +1639,7 @@ function App() {
                 </button>
               </div>
               
-              <form onSubmit={createTouchpoint} className="touchpoint-form">
+              <form onSubmit={handleTouchpointSubmit} className="touchpoint-form">
                 <div className="form-section">
                   <div className="form-group">
                     <label>Touchpoint Type *</label>
@@ -1587,6 +1659,16 @@ function App() {
                       <option value="EVENT">🎯 Event</option>
                       <option value="OTHER">📋 Other</option>
                     </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Date *</label>
+                    <input
+                      type="date"
+                      value={touchpointData.date}
+                      onChange={(e) => setTouchpointData({ ...touchpointData, date: e.target.value })}
+                      required
+                    />
                   </div>
 
                   <div className="form-group">
@@ -1610,7 +1692,7 @@ function App() {
                     Cancel
                   </button>
                   <button type="submit" className="submit-btn">
-                    Add Touchpoint
+                    {isEditingTouchpoint ? 'Update Touchpoint' : 'Add Touchpoint'}
                   </button>
                 </div>
               </form>
