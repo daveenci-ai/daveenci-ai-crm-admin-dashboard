@@ -166,7 +166,7 @@ app.post('/api/contacts', requireAuth, async (req, res) => {
         website,
         address,
         source,
-        status: status || 'PROSPECT',
+        status: status || 'PROSPECTS',
         notes,
         userId
       },

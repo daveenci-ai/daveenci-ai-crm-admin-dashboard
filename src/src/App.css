@@ -1810,12 +1810,16 @@ body {
   border-bottom: 2px solid #4CAF50;
 }
 
-.pipeline-card.unqualified {
-  border-bottom: 2px solid #B0BEC5;
+.pipeline-card.disqualified {
+  border-bottom: 2px solid #A9A9A9;
+}
+
+.pipeline-card.declined {
+  border-bottom: 2px solid #D32F2F;
 }
 
 .pipeline-card.churned {
-  border-bottom: 2px solid #D9534F;
+  border-bottom: 2px solid #000000;
 }
 
 .pipeline-card.center-card {

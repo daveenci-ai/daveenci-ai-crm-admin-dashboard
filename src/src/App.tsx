@@ -18,7 +18,7 @@ interface Contact {
   website?: string;
   address?: string;
   source?: string;
-  status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT' | 'UNQUALIFIED' | 'CHURNED';
+  status: 'PROSPECTS' | 'QUALIFIED_LEADS' | 'OPPORTUNITIES' | 'CONVERTED_CLIENTS' | 'DISQUALIFIED_LEADS' | 'DECLINED_OPPORTUNITIES' | 'CHURNED_CLIENTS';
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +50,7 @@ interface RecentTouchpoint {
     name: string;
     primaryEmail: string;
     company?: string;
-    status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT' | 'UNQUALIFIED' | 'CHURNED';
+    status: 'PROSPECTS' | 'QUALIFIED_LEADS' | 'OPPORTUNITIES' | 'CONVERTED_CLIENTS' | 'DISQUALIFIED_LEADS' | 'DECLINED_OPPORTUNITIES' | 'CHURNED_CLIENTS';
   };
 }
 
@@ -104,7 +104,7 @@ function App() {
     website: string;
     address: string;
     source: string;
-    status: 'PROSPECT' | 'LEAD' | 'OPPORTUNITY' | 'CLIENT' | 'UNQUALIFIED' | 'CHURNED';
+    status: 'PROSPECTS' | 'QUALIFIED_LEADS' | 'OPPORTUNITIES' | 'CONVERTED_CLIENTS' | 'DISQUALIFIED_LEADS' | 'DECLINED_OPPORTUNITIES' | 'CHURNED_CLIENTS';
     notes: string;
   }>({
     name: '',
@@ -117,7 +117,7 @@ function App() {
     website: '',
     address: '',
     source: '',
-    status: 'PROSPECT',
+    status: 'PROSPECTS',
     notes: ''
   });
 
@@ -312,7 +312,7 @@ function App() {
       website: '',
       address: '',
       source: '',
-      status: 'PROSPECT',
+      status: 'PROSPECTS',
       notes: ''
     });
     setShowCreateForm(false);
@@ -480,24 +480,26 @@ function App() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PROSPECT': return '#5B8DEF';      // Blue - Trust, potential
-      case 'LEAD': return '#F4C430';          // Yellow - Interest, caution
-      case 'OPPORTUNITY': return '#FFA14E';   // Orange - Action, momentum
-      case 'CLIENT': return '#4CAF50';        // Green - Success, stability
-      case 'CHURNED': return '#D9534F';       // Soft Red - Attention, loss
-      case 'UNQUALIFIED': return '#B0BEC5';   // Muted Gray - Dormant, not a fit
+      case 'PROSPECTS': return '#8FA4D4';           // Light blue
+      case 'QUALIFIED_LEADS': return '#F6D479';     // Yellow  
+      case 'OPPORTUNITIES': return '#F4A261';       // Orange
+      case 'CONVERTED_CLIENTS': return '#7BC47F';   // Green
+      case 'DISQUALIFIED_LEADS': return '#A9A9A9';  // Gray
+      case 'DECLINED_OPPORTUNITIES': return '#D32F2F'; // Red
+      case 'CHURNED_CLIENTS': return '#000000';     // Black
       default: return '#6b7280'; // Gray
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'PROSPECT': return 'Prospect';
-      case 'LEAD': return 'Lead';
-      case 'OPPORTUNITY': return 'Opportunity';
-      case 'CLIENT': return 'Client';
-      case 'CHURNED': return 'Churned';
-      case 'UNQUALIFIED': return 'Unqualified';
+      case 'PROSPECTS': return 'Prospects';
+      case 'QUALIFIED_LEADS': return 'Qualified Leads';
+      case 'OPPORTUNITIES': return 'Opportunities';
+      case 'CONVERTED_CLIENTS': return 'Converted Clients';
+      case 'DISQUALIFIED_LEADS': return 'Disqualified Leads';
+      case 'DECLINED_OPPORTUNITIES': return 'Declined Opportunities';
+      case 'CHURNED_CLIENTS': return 'Churned Clients';
       default: return status;
     }
   };
@@ -553,15 +555,16 @@ function App() {
 
   // Calculate dashboard stats
   const totalLeads = contacts.length;
-  const convertedLeads = contacts.filter(contact => contact.status === 'CLIENT').length;
+  const convertedLeads = contacts.filter(contact => contact.status === 'CONVERTED_CLIENTS').length;
 
   // Calculate funnel data
-  const prospectCount = contacts.filter(c => c.status === 'PROSPECT').length;
-  const leadCount = contacts.filter(c => c.status === 'LEAD').length;
-  const opportunityCount = contacts.filter(c => c.status === 'OPPORTUNITY').length;
-  const clientCount = contacts.filter(c => c.status === 'CLIENT').length;
-  const unqualifiedCount = contacts.filter(c => c.status === 'UNQUALIFIED').length;
-  const churnedCount = contacts.filter(c => c.status === 'CHURNED').length;
+  const prospectCount = contacts.filter(c => c.status === 'PROSPECTS').length;
+  const leadCount = contacts.filter(c => c.status === 'QUALIFIED_LEADS').length;
+  const opportunityCount = contacts.filter(c => c.status === 'OPPORTUNITIES').length;
+  const clientCount = contacts.filter(c => c.status === 'CONVERTED_CLIENTS').length;
+  const disqualifiedCount = contacts.filter(c => c.status === 'DISQUALIFIED_LEADS').length;
+  const declinedCount = contacts.filter(c => c.status === 'DECLINED_OPPORTUNITIES').length;
+  const churnedCount = contacts.filter(c => c.status === 'CHURNED_CLIENTS').length;
 
 
 
@@ -575,27 +578,31 @@ function App() {
   twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
   
   const newProspects28Days = contacts.filter(contact => 
-    contact.status === 'PROSPECT' && new Date(contact.createdAt) >= twentyEightDaysAgo
+    contact.status === 'PROSPECTS' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
   
   const newLeads28Days = contacts.filter(contact => 
-    contact.status === 'LEAD' && new Date(contact.createdAt) >= twentyEightDaysAgo
+    contact.status === 'QUALIFIED_LEADS' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
   
   const newOpportunities28Days = contacts.filter(contact => 
-    contact.status === 'OPPORTUNITY' && new Date(contact.createdAt) >= twentyEightDaysAgo
+    contact.status === 'OPPORTUNITIES' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
   
   const newClients28Days = contacts.filter(contact => 
-    contact.status === 'CLIENT' && new Date(contact.createdAt) >= twentyEightDaysAgo
+    contact.status === 'CONVERTED_CLIENTS' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
 
-  const newUnqualified28Days = contacts.filter(contact => 
-    contact.status === 'UNQUALIFIED' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  const newDisqualified28Days = contacts.filter(contact => 
+    contact.status === 'DISQUALIFIED_LEADS' && new Date(contact.createdAt) >= twentyEightDaysAgo
+  ).length;
+
+  const newDeclined28Days = contacts.filter(contact => 
+    contact.status === 'DECLINED_OPPORTUNITIES' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
 
   const newChurned28Days = contacts.filter(contact => 
-    contact.status === 'CHURNED' && new Date(contact.createdAt) >= twentyEightDaysAgo
+    contact.status === 'CHURNED_CLIENTS' && new Date(contact.createdAt) >= twentyEightDaysAgo
   ).length;
 
   // Calculate growth percentages (dummy calculation for now since we don't have historical data)
@@ -603,7 +610,8 @@ function App() {
   const leadGrowth = leadCount > 0 ? Math.min(Math.round((newLeads28Days / leadCount) * 100), 100) : 0;
   const opportunityGrowth = opportunityCount > 0 ? Math.min(Math.round((newOpportunities28Days / opportunityCount) * 100), 100) : 0;
   const clientGrowth = clientCount > 0 ? Math.min(Math.round((newClients28Days / clientCount) * 100), 100) : 0;
-  const unqualifiedGrowth = unqualifiedCount > 0 ? Math.min(Math.round((newUnqualified28Days / unqualifiedCount) * 100), 100) : 0;
+  const disqualifiedGrowth = disqualifiedCount > 0 ? Math.min(Math.round((newDisqualified28Days / disqualifiedCount) * 100), 100) : 0;
+  const declinedGrowth = declinedCount > 0 ? Math.min(Math.round((newDeclined28Days / declinedCount) * 100), 100) : 0;
   const churnedGrowth = churnedCount > 0 ? Math.min(Math.round((newChurned28Days / churnedCount) * 100), 100) : 0;
 
 
@@ -630,10 +638,13 @@ function App() {
     // Then filter by contact type
     if (breakdownContactFilter !== 'All Contacts') {
       const statusMap = {
-        'Prospects': 'PROSPECT',
-        'Leads': 'LEAD', 
-        'Opportunities': 'OPPORTUNITY',
-        'Clients': 'CLIENT'
+        'Prospects': 'PROSPECTS',
+        'Qualified Leads': 'QUALIFIED_LEADS', 
+        'Opportunities': 'OPPORTUNITIES',
+        'Converted Clients': 'CONVERTED_CLIENTS',
+        'Disqualified Leads': 'DISQUALIFIED_LEADS',
+        'Declined Opportunities': 'DECLINED_OPPORTUNITIES',
+        'Churned Clients': 'CHURNED_CLIENTS'
       };
       const targetStatus = statusMap[breakdownContactFilter as keyof typeof statusMap];
       if (targetStatus) {
@@ -725,7 +736,7 @@ function App() {
 
     // Create some contacts that have opportunities/leads for realistic events
     const potentialContacts = contacts.filter(c => 
-      c.status === 'LEAD' || c.status === 'OPPORTUNITY' || c.status === 'CLIENT'
+      c.status === 'QUALIFIED_LEADS' || c.status === 'OPPORTUNITIES' || c.status === 'CONVERTED_CLIENTS'
     );
 
     for (let i = 0; i < 10; i++) {
@@ -917,10 +928,15 @@ function App() {
               <div className="pipeline-label">Churned</div>
               <div className="pipeline-growth">+{churnedGrowth}% 28d</div>
             </div>
-            <div className="pipeline-card unqualified" onClick={() => setCurrentView('contacts')}>
-              <div className="pipeline-number">{unqualifiedCount}</div>
-              <div className="pipeline-label">Unqualified</div>
-              <div className="pipeline-growth">+{unqualifiedGrowth}% 28d</div>
+            <div className="pipeline-card disqualified" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{disqualifiedCount}</div>
+              <div className="pipeline-label">Disqualified</div>
+              <div className="pipeline-growth">+{disqualifiedGrowth}% 28d</div>
+            </div>
+            <div className="pipeline-card declined" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{declinedCount}</div>
+              <div className="pipeline-label">Declined</div>
+              <div className="pipeline-growth">+{declinedGrowth}% 28d</div>
             </div>
           </div>
 
@@ -1091,9 +1107,12 @@ function App() {
                   >
                     <option value="All Contacts">All Contacts</option>
                     <option value="Prospects">Prospects</option>
-                    <option value="Leads">Leads</option>
+                    <option value="Qualified Leads">Qualified Leads</option>
                     <option value="Opportunities">Opportunities</option>
-                    <option value="Clients">Clients</option>
+                    <option value="Converted Clients">Converted Clients</option>
+                    <option value="Disqualified Leads">Disqualified Leads</option>
+                    <option value="Declined Opportunities">Declined Opportunities</option>
+                    <option value="Churned Clients">Churned Clients</option>
                   </select>
                   <select 
                     value={breakdownType} 
@@ -1173,12 +1192,13 @@ function App() {
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >
                     <option>All Types</option>
-                    <option value="PROSPECT">Prospects</option>
-                    <option value="LEAD">Leads</option>
-                    <option value="OPPORTUNITY">Opportunities</option>
-                    <option value="CLIENT">Clients</option>
-                    <option value="UNQUALIFIED">Unqualified</option>
-                    <option value="CHURNED">Churned</option>
+                    <option value="PROSPECTS">Prospects</option>
+                    <option value="QUALIFIED_LEADS">Qualified Leads</option>
+                    <option value="OPPORTUNITIES">Opportunities</option>
+                    <option value="CONVERTED_CLIENTS">Converted Clients</option>
+                    <option value="DISQUALIFIED_LEADS">Disqualified Leads</option>
+                    <option value="DECLINED_OPPORTUNITIES">Declined Opportunities</option>
+                    <option value="CHURNED_CLIENTS">Churned Clients</option>
                   </select>
                   <select 
                     value={ownerFilter} 
@@ -1655,12 +1675,13 @@ function App() {
                         value={formData.status}
                         onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                       >
-                        <option value="PROSPECT">Prospect</option>
-                        <option value="LEAD">Lead</option>
-                        <option value="OPPORTUNITY">Opportunity</option>
-                        <option value="CLIENT">Client</option>
-                        <option value="UNQUALIFIED">Unqualified</option>
-                        <option value="CHURNED">Churned</option>
+                        <option value="PROSPECTS">Prospects</option>
+                        <option value="QUALIFIED_LEADS">Qualified Leads</option>
+                        <option value="OPPORTUNITIES">Opportunities</option>
+                        <option value="CONVERTED_CLIENTS">Converted Clients</option>
+                        <option value="DISQUALIFIED_LEADS">Disqualified Leads</option>
+                        <option value="DECLINED_OPPORTUNITIES">Declined Opportunities</option>
+                        <option value="CHURNED_CLIENTS">Churned Clients</option>
                       </select>
                     </div>
 
