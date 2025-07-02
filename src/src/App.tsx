@@ -708,7 +708,7 @@ function App() {
     // Generate 10 mock events over the next 14 days
     const eventTypes = [
       { title: 'Follow-up call', location: '📞 Phone Call', icon: '📞' },
-      { title: 'Product demo', location: '💻 Virtual Meeting', icon: '��' },
+      { title: 'Product demo', location: '💻 Virtual Meeting', icon: '💻' },
       { title: 'Client meeting', location: '📍 Conference Room', icon: '🤝' },
       { title: 'Sales presentation', location: '🏢 Client Office', icon: '📊' },
       { title: 'Contract review', location: '📞 Phone Call', icon: '📄' },
@@ -922,15 +922,15 @@ function App() {
               <div className="pipeline-label">Churned</div>
               <div className="pipeline-growth">+{churnedGrowth}% 28d</div>
             </div>
-            <div className="pipeline-card disqualified" onClick={() => setCurrentView('contacts')}>
-              <div className="pipeline-number">{disqualifiedCount}</div>
-              <div className="pipeline-label">Disqualified</div>
-              <div className="pipeline-growth">+{disqualifiedGrowth}% 28d</div>
-            </div>
             <div className="pipeline-card declined" onClick={() => setCurrentView('contacts')}>
               <div className="pipeline-number">{declinedCount}</div>
               <div className="pipeline-label">Declined</div>
               <div className="pipeline-growth">+{declinedGrowth}% 28d</div>
+            </div>
+            <div className="pipeline-card disqualified" onClick={() => setCurrentView('contacts')}>
+              <div className="pipeline-number">{disqualifiedCount}</div>
+              <div className="pipeline-label">Disqualified</div>
+              <div className="pipeline-growth">+{disqualifiedGrowth}% 28d</div>
             </div>
           </div>
 
@@ -1314,8 +1314,8 @@ function App() {
               <div className="contact-details-panel">
                 {selectedContact ? (
                   <div className="contact-details">
-                    {/* Top Section: Essential Contact Info */}
-                    <div className="contact-header-section">
+                    {/* Head Section: Name, Contact, Status, Actions, Source, Added */}
+                    <div className="contact-head-section">
                       <div className="contact-avatar-large">
                         {selectedContact.name.charAt(0).toUpperCase()}
                       </div>
@@ -1330,6 +1330,16 @@ function App() {
                           <div className="contact-method">
                             📞 {selectedContact.primaryPhone || selectedContact.phone || 'No phone'}
                             {selectedContact.secondaryPhone && <span className="secondary-info"> • {selectedContact.secondaryPhone}</span>}
+                          </div>
+                        </div>
+                        <div className="contact-meta-info">
+                          <div className="meta-item">
+                            <span className="meta-label">Source:</span>
+                            <span className="meta-value">{selectedContact.source || 'Not specified'}</span>
+                          </div>
+                          <div className="meta-item">
+                            <span className="meta-label">Added:</span>
+                            <span className="meta-value">{formatDate(selectedContact.createdAt)}</span>
                           </div>
                         </div>
                       </div>
@@ -1360,82 +1370,66 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Divider */}
-                    <div className="contact-divider"></div>
-                    
-                    {/* Bottom Section: Company & Additional Details */}
-                    <div className="contact-secondary-info">
-                      {/* Company Information */}
-                      {(selectedContact.company || selectedContact.industry || selectedContact.website) && (
-                        <div className="info-block company-block">
-                          <div className="info-block-header">
-                            <span className="info-icon">🏢</span>
-                            <span className="info-title">Company</span>
+                    {/* Company Section */}
+                    {(selectedContact.company || selectedContact.industry || selectedContact.website || selectedContact.address) && (
+                      <>
+                        <div className="section-divider"></div>
+                        <div className="contact-company-section">
+                          <div className="company-icon">
+                            🏢
                           </div>
-                          <div className="info-content">
+                          
+                          <div className="company-info">
                             {selectedContact.company && (
-                              <div className="company-name">{selectedContact.company}</div>
+                              <h3 className="company-name">{selectedContact.company}</h3>
                             )}
-                            {selectedContact.industry && (
-                              <div className="company-industry">{selectedContact.industry}</div>
-                            )}
-                            {selectedContact.website && (
-                              <div className="company-website">
-                                <a href={selectedContact.website.startsWith('http') ? selectedContact.website : `https://${selectedContact.website}`} target="_blank" rel="noopener noreferrer">
-                                  🌐 {selectedContact.website}
-                                </a>
-                              </div>
-                            )}
+                            <div className="company-details">
+                              {selectedContact.industry && (
+                                <div className="company-detail">
+                                  <span className="detail-label">Industry:</span>
+                                  <span className="detail-value">{selectedContact.industry}</span>
+                                </div>
+                              )}
+                              {selectedContact.website && (
+                                <div className="company-detail">
+                                  <span className="detail-label">Website:</span>
+                                  <span className="detail-value">
+                                    <a href={selectedContact.website.startsWith('http') ? selectedContact.website : `https://${selectedContact.website}`} target="_blank" rel="noopener noreferrer">
+                                      {selectedContact.website}
+                                    </a>
+                                  </span>
+                                </div>
+                              )}
+                              {selectedContact.address && (
+                                <div className="company-detail">
+                                  <span className="detail-label">Location:</span>
+                                  <span className="detail-value">{selectedContact.address}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      )}
-                      
-                      {/* Location Information */}
-                      {selectedContact.address && (
-                        <div className="info-block location-block">
-                          <div className="info-block-header">
-                            <span className="info-icon">📍</span>
-                            <span className="info-title">Location</span>
+                      </>
+                    )}
+
+                    {/* Notes Section */}
+                    {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
+                      <>
+                        <div className="section-divider"></div>
+                        <div className="contact-notes-section">
+                          <div className="notes-icon">
+                            📝
                           </div>
-                          <div className="info-content">
-                            <div className="location-address">{selectedContact.address}</div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Source & Date Information */}
-                      <div className="info-block meta-block">
-                        <div className="info-block-header">
-                          <span className="info-icon">📊</span>
-                          <span className="info-title">Details</span>
-                        </div>
-                        <div className="info-content">
-                          <div className="meta-row">
-                            <span className="meta-label">Source:</span>
-                            <span className="meta-value">{selectedContact.source || 'Not specified'}</span>
-                          </div>
-                          <div className="meta-row">
-                            <span className="meta-label">Added:</span>
-                            <span className="meta-value">{formatDate(selectedContact.createdAt)}</span>
+                          <div className="notes-content">
+                            <h4 className="notes-title">Notes</h4>
+                            <p className="notes-text">{selectedContact.notes}</p>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Notes */}
-                      {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
-                        <div className="info-block notes-block">
-                          <div className="info-block-header">
-                            <span className="info-icon">📝</span>
-                            <span className="info-title">Notes</span>
-                          </div>
-                          <div className="info-content">
-                            <div className="notes-text">{selectedContact.notes}</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      </>
+                    )}
 
                     {/* Touchpoints Section */}
+                    <div className="section-divider"></div>
                     <div className="touchpoints-section-redesigned">
                       <div className="touchpoints-header">
                         <div className="section-title">
