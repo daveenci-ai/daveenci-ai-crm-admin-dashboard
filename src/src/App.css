@@ -1224,13 +1224,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px 12px;
+  padding: 8px 16px;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 6px;
   border: 1px solid rgba(226, 232, 240, 0.5);
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 70px;
+  width: 120px;
   backdrop-filter: blur(10px);
 }
 
@@ -1572,8 +1572,8 @@ body {
   }
   
   .pipeline-card {
-    min-width: 60px;
-    padding: 4px 8px;
+    width: 100px;
+    padding: 6px 12px;
   }
   
   .pipeline-number {
@@ -1605,8 +1605,8 @@ body {
   }
   
   .pipeline-card {
-    min-width: 55px;
-    padding: 3px 6px;
+    width: 85px;
+    padding: 5px 10px;
   }
   
   .pipeline-number {
@@ -1667,8 +1667,8 @@ body {
   }
   
   .pipeline-card {
-    min-width: 50px;
-    padding: 2px 4px;
+    width: 70px;
+    padding: 4px 8px;
   }
   
   .pipeline-number {
