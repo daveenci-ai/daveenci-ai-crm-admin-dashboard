@@ -58,6 +58,38 @@ model Touchpoint {
   @@map("touchpoints")
 }
 
+model Event {
+  id               Int                @id @default(autoincrement())
+  eventDate        DateTime?          @map("event_date")
+  eventName        String?            @map("event_name")
+  eventAddress     String?            @map("event_address")
+  eventType        String?            @map("event_type")
+  eventDescription String?            @map("event_description")
+  eventCapacity    Int?               @map("event_capacity")
+  eventStatus      String?            @map("event_status")
+  createdAt        DateTime           @default(now()) @map("dt")
+  updatedAt        DateTime           @default(now()) @updatedAt @map("dt_updated")
+  participants     EventParticipant[]
+
+  @@map("events")
+}
+
+model EventParticipant {
+  id          Int      @id @default(autoincrement())
+  eventId     Int?     @map("event_id")
+  fullName    String?  @map("full_name")
+  email       String?
+  phone       String?
+  companyName String?  @map("company_name")
+  website     String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("dt")
+  updatedAt   DateTime @default(now()) @updatedAt @map("dt_updated")
+  event       Event?   @relation(fields: [eventId], references: [id])
+
+  @@map("event_participants")
+}
+
 enum Status {
   PROSPECTS
   QUALIFIED_LEADS
