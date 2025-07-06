@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Login from './Login';
 import './App.css';
 
 // Configure axios to send cookies
 axios.defaults.withCredentials = true;
+
+// Add request timeout
+axios.defaults.timeout = 10000; // 10 seconds
 
 interface Contact {
   id: number;
@@ -58,6 +61,35 @@ const API_BASE_URL = 'https://daveenci-ai-crm-admin-dashboard.onrender.com/api';
 
 type ViewType = 'dashboard' | 'contacts' | 'email-campaigns' | 'calendar';
 
+// Cache utilities
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const getCachedData = (key: string) => {
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        return data;
+      }
+    }
+  } catch (error) {
+    console.error('Error reading cache:', error);
+  }
+  return null;
+};
+
+const setCachedData = (key: string, data: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (error) {
+    console.error('Error setting cache:', error);
+  }
+};
+
 // Simple Tooltip Component
 const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
   return (
@@ -77,8 +109,12 @@ function App() {
   const [recentTouchpoints, setRecentTouchpoints] = useState<RecentTouchpoint[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isContactsLoading, setIsContactsLoading] = useState(true);
+  const [isTouchpointsLoading, setIsTouchpointsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Progressive loading state
+  const [hasInitialData, setHasInitialData] = useState(false);
   
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -146,8 +182,29 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      fetchContacts();
-      fetchRecentTouchpoints();
+      // Load cached data first for instant UI
+      const cachedContacts = getCachedData('contacts');
+      const cachedTouchpoints = getCachedData('touchpoints');
+      
+      if (cachedContacts) {
+        setContacts(cachedContacts);
+        setIsContactsLoading(false);
+        setHasInitialData(true);
+      }
+      
+      if (cachedTouchpoints) {
+        setRecentTouchpoints(cachedTouchpoints);
+        setIsTouchpointsLoading(false);
+      }
+      
+      // Then fetch fresh data in parallel
+      Promise.all([
+        fetchContacts(),
+        fetchRecentTouchpoints()
+      ]).catch(err => {
+        console.error('Error loading data:', err);
+        setError('Failed to load data. Please try refreshing the page.');
+      });
     }
   }, [user]);
 
@@ -183,27 +240,49 @@ function App() {
     }
   };
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async (retryCount = 0) => {
     try {
-      setIsLoading(true);
+      setIsContactsLoading(true);
       const response = await axios.get(`${API_BASE_URL}/contacts`);
       setContacts(response.data);
+      setCachedData('contacts', response.data);
+      setHasInitialData(true);
+      setError(null); // Clear any previous errors
     } catch (err) {
-      setError('Failed to fetch data. Please try refreshing the page.');
       console.error('Error fetching contacts:', err);
+      
+      // Retry logic for network errors
+      if (retryCount < 2 && axios.isAxiosError(err) && (!err.response || err.response.status >= 500)) {
+        console.log(`Retrying contacts fetch (attempt ${retryCount + 1})`);
+        setTimeout(() => fetchContacts(retryCount + 1), 1000 * (retryCount + 1));
+        return;
+      }
+      
+      setError('Failed to fetch contacts. Please try refreshing the page.');
     } finally {
-      setIsLoading(false);
+      setIsContactsLoading(false);
     }
-  };
+  }, []);
 
-  const fetchRecentTouchpoints = async () => {
+  const fetchRecentTouchpoints = useCallback(async (retryCount = 0) => {
     try {
+      setIsTouchpointsLoading(true);
       const response = await axios.get(`${API_BASE_URL}/touchpoints/recent?limit=10`);
       setRecentTouchpoints(response.data);
+      setCachedData('touchpoints', response.data);
     } catch (err) {
       console.error('Error fetching recent touchpoints:', err);
+      
+      // Retry logic for network errors
+      if (retryCount < 2 && axios.isAxiosError(err) && (!err.response || err.response.status >= 500)) {
+        console.log(`Retrying touchpoints fetch (attempt ${retryCount + 1})`);
+        setTimeout(() => fetchRecentTouchpoints(retryCount + 1), 1000 * (retryCount + 1));
+        return;
+      }
+    } finally {
+      setIsTouchpointsLoading(false);
     }
-  };
+  }, []);
 
   const exportContacts = () => {
     const csvHeaders = [
@@ -846,8 +925,8 @@ function App() {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // Show app loading while fetching data
-  if (isLoading) {
+  // Show app loading only if we have no data at all
+  if (!hasInitialData && (isContactsLoading || isTouchpointsLoading)) {
     return (
       <div className="loading-container">
         <div className="spinner"></div>
@@ -905,6 +984,17 @@ function App() {
             title="Export filtered contacts to CSV file"
           >
             📄 Export CSV ({filteredContacts.length})
+          </button>
+          <button 
+            className="nav-action-btn refresh-btn"
+            onClick={() => {
+              fetchContacts();
+              fetchRecentTouchpoints();
+            }}
+            title="Refresh data"
+            disabled={isContactsLoading || isTouchpointsLoading}
+          >
+            🔄 Refresh
           </button>
           <button className="nav-action-btn logout-btn" onClick={handleLogout}>
             Logout
@@ -987,16 +1077,30 @@ function App() {
                   <div className="column-header">
                     <h3>New Contacts</h3>
                     <span className="column-subtitle">Last 7 Days</span>
+                    {isContactsLoading && <div className="small-spinner"></div>}
                   </div>
                   <div className="column-content">
-                    {newContacts.length === 0 ? (
+                    {isContactsLoading && contacts.length === 0 ? (
+                      <div className="skeleton-loading">
+                        <div className="skeleton-item"></div>
+                        <div className="skeleton-item"></div>
+                        <div className="skeleton-item"></div>
+                      </div>
+                    ) : newContacts.length === 0 ? (
                       <div className="empty-state-small">
                         <p>No new contacts this week</p>
                         <span>Add contacts to see them here</span>
                       </div>
                     ) : (
                       newContacts.slice(0, 10).map((contact) => (
-                        <div key={contact.id} className="contact-item-small">
+                        <div 
+                          key={contact.id} 
+                          className="contact-item-small"
+                          onClick={() => {
+                            setSelectedContact(contact);
+                            setCurrentView('contacts');
+                          }}
+                        >
                           <div className="contact-avatar-small">
                             {contact.name.charAt(0).toUpperCase()}
                           </div>
@@ -1022,16 +1126,33 @@ function App() {
                   <div className="column-header">
                     <h3>Recent Touchpoints</h3>
                     <span className="column-subtitle">All Recent Activity</span>
+                    {isTouchpointsLoading && <div className="small-spinner"></div>}
                   </div>
                   <div className="column-content">
-                    {recentTouchpoints.length === 0 ? (
+                    {isTouchpointsLoading && recentTouchpoints.length === 0 ? (
+                      <div className="skeleton-loading">
+                        <div className="skeleton-item"></div>
+                        <div className="skeleton-item"></div>
+                        <div className="skeleton-item"></div>
+                      </div>
+                    ) : recentTouchpoints.length === 0 ? (
                       <div className="empty-state-small">
                         <p>No recent touchpoints</p>
                         <span>Interactions will appear here</span>
                       </div>
                     ) : (
                       recentTouchpoints.slice(0, 10).map((touchpoint) => (
-                        <div key={touchpoint.id} className="touchpoint-item-small">
+                        <div 
+                          key={touchpoint.id} 
+                          className="touchpoint-item-small"
+                          onClick={() => {
+                            const contact = contacts.find(c => c.id === touchpoint.contact.id);
+                            if (contact) {
+                              setSelectedContact(contact);
+                              setCurrentView('contacts');
+                            }
+                          }}
+                        >
                           <div 
                             className="touchpoint-icon-small"
                             style={{ backgroundColor: getTouchpointIconColor(touchpoint.source) }}
