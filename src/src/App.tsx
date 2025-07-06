@@ -1500,16 +1500,14 @@ function App() {
                             {selectedContact.company && (
                               <h3 className="company-name">{selectedContact.company}</h3>
                             )}
-                            <div className="company-details">
-                              {selectedContact.industry && (
+                             {selectedContact.address && (
                                 <div className="company-detail">
-                                  <span className="detail-label">Industry:</span>
-                                  <span className="detail-value">{selectedContact.industry}</span>
+                                  <span className="detail-value">{selectedContact.address}</span>
                                 </div>
                               )}
+                            <div className="company-details">
                               {selectedContact.website && (
                                 <div className="company-detail">
-                                  <span className="detail-label">Website:</span>
                                   <span className="detail-value">
                                     <a href={selectedContact.website.startsWith('http') ? selectedContact.website : `https://${selectedContact.website}`} target="_blank" rel="noopener noreferrer">
                                       {selectedContact.website}
@@ -1517,10 +1515,9 @@ function App() {
                                   </span>
                                 </div>
                               )}
-                              {selectedContact.address && (
+                              {selectedContact.industry && (
                                 <div className="company-detail">
-                                  <span className="detail-label">Location:</span>
-                                  <span className="detail-value">{selectedContact.address}</span>
+                                  <span className="detail-value">{selectedContact.industry}</span>
                                 </div>
                               )}
                             </div>
