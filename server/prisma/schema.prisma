@@ -19,6 +19,7 @@ model User {
   name      String?
   password  String
   createdAt DateTime  @default(now()) @map("created_at")
+  validated Boolean   @default(false)
   contacts  Contact[]
 
   @@map("users")
@@ -42,9 +43,67 @@ model Contact {
   updatedAt      DateTime     @updatedAt @map("updated_at")
   user           User         @relation(fields: [userId], references: [id])
   userId         Int          @map("user_id")
+  linkedinUrl    String?      @map("linkedin_url")
+  facebookUrl    String?      @map("facebook_url")
+  instagramUrl   String?      @map("instagram_url")
+  youtubeUrl     String?      @map("youtube_url")
+  tiktokUrl      String?      @map("tiktok_url")
   touchpoints    Touchpoint[]
 
   @@map("contacts")
+}
+
+model ContactTemp {
+  id             Int      @id @default(autoincrement())
+  name           String
+  primaryEmail   String   @map("primary_email")
+  secondaryEmail String?  @map("secondary_email")
+  primaryPhone   String?  @map("primary_phone")
+  secondaryPhone String?  @map("secondary_phone")
+  company        String?
+  industry       String?
+  website        String?
+  address        String?
+  source         String?
+  status         Status
+  notes          String?
+  userId         Int      @map("user_id")
+  linkedinUrl    String?  @map("linkedin_url")
+  facebookUrl    String?  @map("facebook_url")
+  instagramUrl   String?  @map("instagram_url")
+  youtubeUrl     String?  @map("youtube_url")
+  tiktokUrl      String?  @map("tiktok_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("contacts_temp")
+}
+
+model Avatar {
+  id                 BigInt             @id @default(autoincrement())
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at")
+  contactId          Int?               @map("contact_id")
+  fullName           String             @map("full_name")
+  replicateModelUrl  String             @unique @map("replicate_model_url")
+  triggerWord        String             @map("trigger_word")
+  description        String?
+  visible            Boolean            @default(true)
+  generatedAvatars   AvatarGenerated[]
+
+  @@map("avatars")
+}
+
+model AvatarGenerated {
+  id             BigInt   @id @default(autoincrement())
+  avatarId       BigInt   @map("avatar_id")
+  prompt         String
+  githubImageUrl String   @map("github_image_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  avatar         Avatar   @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@index([avatarId], map: "idx_avatars_generated_avatar_id")
+  @@map("avatars_generated")
 }
 
 model Touchpoint {
@@ -71,6 +130,10 @@ model Event {
   updatedAt        DateTime           @default(now()) @updatedAt @map("dt_updated")
   participants     EventParticipant[]
 
+  @@index([eventDate], map: "idx_events_date")
+  @@index([eventStatus], map: "idx_events_status")
+  @@index([eventType], map: "idx_events_type")
+  @@unique([eventName, eventType], map: "idx_events_unique")
   @@map("events")
 }
 
@@ -85,8 +148,11 @@ model EventParticipant {
   notes       String?
   createdAt   DateTime @default(now()) @map("dt")
   updatedAt   DateTime @default(now()) @updatedAt @map("dt_updated")
-  event       Event?   @relation(fields: [eventId], references: [id])
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
+  @@index([email], map: "idx_participants_email")
+  @@index([eventId], map: "idx_participants_event")
+  @@unique([eventId, email], map: "idx_participants_unique")
   @@map("event_participants")
 }
 

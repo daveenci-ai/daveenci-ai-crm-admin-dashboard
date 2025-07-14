@@ -167,7 +167,7 @@ async function createDefaultUser() {
     await prisma.user.create({
       data: {
         name: 'Admin',
-        email: 'admin@daveenci.com',
+        email: 'admin@daveenci.ai',
         password: defaultPassword,
         createdAt: new Date()
       }
