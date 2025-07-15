@@ -118,7 +118,7 @@ function App() {
   
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('All Types');
+  const [statusFilter, setStatusFilter] = useState<string>('PROSPECTS');
   const [ownerFilter, setOwnerFilter] = useState<string>('All Owners');
   const [timeFilter, setTimeFilter] = useState<string>('All Time');
   const [recentActivityFilter, setRecentActivityFilter] = useState<string>('All Activity');
@@ -844,7 +844,7 @@ function App() {
       contact.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.address?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'All Types' || contact.status === statusFilter;
+    const matchesStatus = contact.status === statusFilter;
     
     const matchesOwner = ownerFilter === 'All Owners' || contact.user.name === ownerFilter;
     
@@ -1007,17 +1007,35 @@ function App() {
         <div className="pipeline-container">
           {/* Inactive Pipeline - Left Side */}
           <div className="pipeline-group inactive-group">
-            <div className="pipeline-card churned" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card churned ${statusFilter === 'CHURNED_CLIENTS' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter(statusFilter === 'CHURNED_CLIENTS' ? 'PROSPECTS' : 'CHURNED_CLIENTS');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{churnedCount}</div>
               <div className="pipeline-label">Churned</div>
               <div className="pipeline-growth">+{churnedGrowth}% 28d</div>
             </div>
-            <div className="pipeline-card declined" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card declined ${statusFilter === 'DECLINED_OPPORTUNITIES' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter(statusFilter === 'DECLINED_OPPORTUNITIES' ? 'PROSPECTS' : 'DECLINED_OPPORTUNITIES');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{declinedCount}</div>
               <div className="pipeline-label">Declined</div>
               <div className="pipeline-growth">+{declinedGrowth}% 28d</div>
             </div>
-            <div className="pipeline-card disqualified" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card disqualified ${statusFilter === 'DISQUALIFIED_LEADS' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter(statusFilter === 'DISQUALIFIED_LEADS' ? 'PROSPECTS' : 'DISQUALIFIED_LEADS');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{disqualifiedCount}</div>
               <div className="pipeline-label">Disqualified</div>
               <div className="pipeline-growth">+{disqualifiedGrowth}% 28d</div>
@@ -1027,7 +1045,13 @@ function App() {
           {/* Pipeline Flow Arrows */}
           <div className="pipeline-flow">
             <div className="flow-arrow left">←</div>
-            <div className="pipeline-card prospects center-card" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card prospects center-card ${statusFilter === 'PROSPECTS' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter('PROSPECTS');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{prospectCount}</div>
               <div className="pipeline-label">Prospects</div>
               <div className="pipeline-growth">+{prospectGrowth}% 28d</div>
@@ -1037,17 +1061,35 @@ function App() {
 
           {/* Active Pipeline - Right Side */}
           <div className="pipeline-group active-group">
-            <div className="pipeline-card leads" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card leads ${statusFilter === 'QUALIFIED_LEADS' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter(statusFilter === 'QUALIFIED_LEADS' ? 'PROSPECTS' : 'QUALIFIED_LEADS');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{leadCount}</div>
               <div className="pipeline-label">Leads</div>
               <div className="pipeline-growth">+{leadGrowth}% 28d</div>
             </div>
-            <div className="pipeline-card opportunities" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card opportunities ${statusFilter === 'OPPORTUNITIES' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter(statusFilter === 'OPPORTUNITIES' ? 'PROSPECTS' : 'OPPORTUNITIES');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{opportunityCount}</div>
               <div className="pipeline-label">Opportunities</div>
               <div className="pipeline-growth">+{opportunityGrowth}% 28d</div>
             </div>
-            <div className="pipeline-card clients" onClick={() => setCurrentView('contacts')}>
+            <div 
+              className={`pipeline-card clients ${statusFilter === 'CONVERTED_CLIENTS' ? 'active-filter' : ''}`}
+              onClick={() => {
+                setStatusFilter(statusFilter === 'CONVERTED_CLIENTS' ? 'PROSPECTS' : 'CONVERTED_CLIENTS');
+                setCurrentView('contacts');
+              }}
+            >
               <div className="pipeline-number">{clientCount}</div>
               <div className="pipeline-label">Clients</div>
               <div className="pipeline-growth">+{clientGrowth}% 28d</div>
@@ -1299,19 +1341,18 @@ function App() {
                   />
                 </div>
                 <div className="filters-section">
-                  <select 
-                    value={statusFilter} 
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option>All Types</option>
-                    <option value="PROSPECTS">Prospects</option>
-                    <option value="QUALIFIED_LEADS">Qualified Leads</option>
-                    <option value="OPPORTUNITIES">Opportunities</option>
-                    <option value="CONVERTED_CLIENTS">Converted Clients</option>
-                    <option value="DISQUALIFIED_LEADS">Disqualified Leads</option>
-                    <option value="DECLINED_OPPORTUNITIES">Declined Opportunities</option>
-                    <option value="CHURNED_CLIENTS">Churned Clients</option>
-                  </select>
+                  {statusFilter !== 'PROSPECTS' && (
+                    <div className="active-filter-indicator">
+                      <span>Filtered by: {getStatusLabel(statusFilter)}</span>
+                      <button 
+                        className="clear-filter-btn"
+                        onClick={() => setStatusFilter('PROSPECTS')}
+                        title="Clear status filter"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   <select 
                     value={ownerFilter} 
                     onChange={(e) => setOwnerFilter(e.target.value)}
