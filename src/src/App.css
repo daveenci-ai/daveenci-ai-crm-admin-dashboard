@@ -1992,8 +1992,7 @@ body {
 }
 
 .pipeline-card.center-card {
-  border: 2px solid #5B8DEF;
-  background: rgba(91, 141, 239, 0.1);
+  border-bottom: 2px solid #5B8DEF;
 }
 
 /* Active filter styles - full border for selected cards */
@@ -2003,7 +2002,8 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.pipeline-card.prospects.active-filter {
+.pipeline-card.prospects.active-filter,
+.pipeline-card.center-card.active-filter {
   border: 2px solid #5B8DEF;
   background: rgba(91, 141, 239, 0.1);
 }
