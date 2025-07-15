@@ -14,8 +14,8 @@
     "db:deploy-preserve": "npm run db:deploy-preserve --prefix server",
     "db:super-nuclear": "npm run db:super-nuclear --prefix server",
     "db:push": "npm run db:push --prefix server",
-    "render:build": "npm run setup && npm run render:build --prefix server",
-    "render:start": "npm run render:start --prefix server"
+    "build:prod": "npm run setup && npm run build:prod --prefix server",
+    "start:prod": "npm run start:prod --prefix server"
   },
   "keywords": [
     "crm",

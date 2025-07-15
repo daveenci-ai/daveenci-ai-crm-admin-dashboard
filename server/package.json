@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx prisma generate && tsc",
     "start": "node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
     "db:migrate": "npx prisma migrate dev",
@@ -19,8 +19,8 @@
     "db:push": "npx prisma db push",
     "test": "node scripts/test-api-endpoints.js",
     "test:api": "node scripts/test-api-endpoints.js",
-    "render:build": "npx prisma generate && npm run build",
-    "render:start": "npm start",
+    "build:prod": "npx prisma generate && npm run build",
+    "start:prod": "npm start",
     "render:deploy-with-migrate": "npx prisma migrate deploy && npx prisma generate && npm run build",
     "render:baseline": "npx prisma migrate resolve --applied 20250714170000_baseline && npx prisma generate && npm run build"
   },
