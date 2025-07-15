@@ -1,40 +1,47 @@
 # Render Deployment Guide - Daveenci CRM
 
-## 🚀 Quick Deploy Command
+## 🚀 Render Configuration
 
-Since your database already has the required tables, use this single command:
+Since your database already has the required tables, use these commands in Render:
 
+**Build Command:**
+```bash
+npm run render:build
+```
+
+**Start Command:**
 ```bash
 npm run render:start
 ```
 
-## 📋 What This Command Does
+## 📋 What These Commands Do
 
-1. **Generates Prisma Client** - Creates the client to match your existing database structure
-2. **Builds Server** - Compiles TypeScript to JavaScript
-3. **Starts Application** - Launches the server
+**Build Command:**
+1. **Installs Dependencies** - Both server and frontend
+2. **Generates Prisma Client** - Creates the client to match your existing database structure
+3. **Builds Server** - Compiles TypeScript to JavaScript
+
+**Start Command:**
+1. **Starts Application** - Launches the server
 
 ## 🛠️ Alternative Deployment Methods
 
-### Method 1: Using npm scripts (Recommended)
-```bash
-npm run render:start
-```
-
-### Method 2: Using the deployment script
+### Method 1: Using the deployment script
 ```bash
 ./render-deploy.sh
 ```
 
-### Method 3: Manual steps
+### Method 2: Manual steps
 ```bash
 # Install dependencies
 npm run setup
 
-# Build and start server
+# Build server
 cd server
 npx prisma generate
 npm run build
+
+# Start server (separate step)
 npm start
 ```
 
@@ -52,12 +59,12 @@ PORT=10000
 
 ### Build Command:
 ```bash
-npm run render:deploy
+npm run render:build
 ```
 
 ### Start Command:
 ```bash
-npm run start:server
+npm run render:start
 ```
 
 ## 🗄️ Database Notes
@@ -105,4 +112,6 @@ If something goes wrong:
 
 ---
 
-**Ready to deploy? Run:** `npm run render:start` 
+**Ready to deploy on Render?**
+- **Build Command:** `npm run render:build`
+- **Start Command:** `npm run render:start` 

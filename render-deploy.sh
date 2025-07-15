@@ -30,8 +30,10 @@ cd ..
 echo "🎨 Building frontend..."
 npm run build --prefix src
 
-echo "✅ Deployment completed successfully!"
-echo "🎯 Ready to start with: npm run render:start"
+echo "✅ Build completed successfully!"
+echo "🎯 Use these commands in Render:"
+echo "   Build Command: npm run render:build"
+echo "   Start Command: npm run render:start"
 
 # Optional: If you need to run migrations later, use:
 # echo "To run migrations later: cd server && npx prisma migrate deploy" 
