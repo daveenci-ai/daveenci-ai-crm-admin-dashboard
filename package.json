@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix src\"",
-    "build": "npm run build --prefix server && npm run build --prefix src",
-    "start:server": "npm start --prefix server",
+    "build": "npm install && npm install --prefix server && npm run build --prefix server",
+    "start": "npm start --prefix server",
     "start:frontend": "npm start --prefix src",
     "setup": "npm install && npm install --prefix server && npm install --prefix src",
     "db:migrate": "npm run db:migrate --prefix server",
