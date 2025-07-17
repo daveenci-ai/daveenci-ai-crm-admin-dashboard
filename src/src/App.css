@@ -171,6 +171,128 @@ body {
   overflow-y: auto;
 }
 
+/* Pipeline Stats Bar */
+.pipeline-stats-bar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 24px;
+}
+
+.pipeline-stats-container {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  border: 2px solid transparent;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.highlight {
+  border: 2px solid #f59e0b;
+  background: #fffbeb;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.stat-growth {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Status-specific colors */
+.stat-card.churned {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.stat-card.churned:hover {
+  background: #fee2e2;
+}
+
+.stat-card.declined {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.stat-card.declined:hover {
+  background: #fee2e2;
+}
+
+.stat-card.unqualified {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.stat-card.unqualified:hover {
+  background: #e5e7eb;
+}
+
+.stat-card.prospects {
+  background: #f0f9ff;
+  color: #1e40af;
+}
+
+.stat-card.prospects:hover {
+  background: #dbeafe;
+}
+
+.stat-card.leads {
+  background: #f59e0b20;
+  color: #d97706;
+}
+
+.stat-card.leads:hover {
+  background: #fef3c7;
+}
+
+.stat-card.opportunities {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.stat-card.opportunities:hover {
+  background: #e9d5ff;
+}
+
+.stat-card.clients {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.stat-card.clients:hover {
+  background: #d1fae5;
+}
+
 /* Contacts View */
 .contacts-view {
   width: 100%;
@@ -417,7 +539,9 @@ body {
   position: absolute;
   top: 64px; /* Below top navigation */
   right: 0;
-  width: 500px;
+  width: 60%; /* Increased from 500px to 60% for better screen utilization */
+  min-width: 600px; /* Minimum width to ensure usability */
+  max-width: 900px; /* Maximum width to prevent it from being too wide on large screens */
   height: calc(100vh - 64px);
   background: white;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
@@ -427,16 +551,20 @@ body {
 }
 
 .sliding-panel-content .contact-details {
-  padding: 24px;
+  /* Remove padding to allow sections to manage their own spacing */
+  padding: 0;
 }
 
 .sliding-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 20px 32px; /* Increased padding for better use of space */
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .sliding-panel-header h3 {
@@ -482,22 +610,25 @@ body {
 .contact-head-section {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 24px;
+  gap: 24px; /* Increased gap for better use of wider space */
+  padding: 32px; /* Increased padding for wider panel */
+  background: #fafbfc; /* Subtle background to differentiate header */
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .contact-avatar-large {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 72px; /* Increased from 56px */
+  height: 72px; /* Increased from 56px */
+  border-radius: 16px; /* Increased from 12px */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   color: white;
-  font-size: 22px;
+  font-size: 28px; /* Increased from 22px */
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .contact-essential-info {
@@ -506,27 +637,28 @@ body {
 }
 
 .contact-name-primary {
-  font-size: 18px;
+  font-size: 24px; /* Increased from 18px */
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0; /* Increased margin */
   line-height: 1.3;
 }
 
 .contact-methods {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: 8px; /* Increased from 4px */
+  margin-bottom: 16px; /* Increased from 12px */
 }
 
 .contact-method {
-  font-size: 13px;
+  font-size: 15px; /* Increased from 13px */
   color: #1e293b;
   line-height: 1.4;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px; /* Increased from 4px */
+  padding: 4px 0;
 }
 
 .secondary-info {
@@ -536,39 +668,44 @@ body {
 
 .contact-meta-info {
   display: flex;
-  gap: 16px;
+  gap: 24px; /* Increased from 16px */
+  flex-wrap: wrap;
 }
 
 .meta-item {
   display: flex;
-  gap: 6px;
+  gap: 8px; /* Increased from 6px */
   align-items: center;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .meta-label {
-  font-size: 12px;
+  font-size: 13px; /* Increased from 12px */
   color: #64748b;
   font-weight: 500;
 }
 
 .meta-value {
-  font-size: 12px;
+  font-size: 13px; /* Increased from 12px */
   color: #1e293b;
-  font-weight: 500;
+  font-weight: 600; /* Increased from 500 */
 }
 
 .contact-status-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 12px; /* Increased from 8px */
   flex-shrink: 0;
 }
 
 .status-badge-primary {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px;
+  padding: 8px 16px; /* Increased from 6px 12px */
+  border-radius: 8px; /* Increased from 6px */
+  font-size: 12px; /* Increased from 11px */
   font-weight: 600;
   color: white;
   text-transform: uppercase;
@@ -624,46 +761,47 @@ body {
 
 /* Company Section */
 .contact-company-section {
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
-  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two-column layout for better space utilization */
+  gap: 32px; /* Increased gap */
+  padding: 32px; /* Increased padding */
+  align-items: start;
 }
 
 .company-main-info {
-  flex: 1;
   min-width: 0;
 }
 
 .company-name {
-  font-size: 18px;
+  font-size: 20px; /* Increased from 18px */
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0; /* Increased margin */
   line-height: 1.3;
 }
 
 .company-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px; /* Increased from 6px */
 }
 
 .company-detail {
   display: flex;
-  gap: 8px;
+  gap: 12px; /* Increased from 8px */
   align-items: center;
+  padding: 8px 0;
 }
 
 .detail-label {
-  font-size: 12px;
+  font-size: 13px; /* Increased from 12px */
   color: #64748b;
   font-weight: 500;
-  min-width: 70px;
+  min-width: 80px; /* Increased from 70px */
 }
 
 .detail-value {
-  font-size: 13px;
+  font-size: 14px; /* Increased from 13px */
   color: #1e293b;
   font-weight: 500;
 }
@@ -671,41 +809,45 @@ body {
 .detail-value a {
   color: #3b82f6;
   text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .detail-value a:hover {
+  background: #eff6ff;
   text-decoration: underline;
 }
 
-/* Company Notes (Right Side) */
+/* Company Notes (Now as second column) */
 .company-notes {
-  flex: 0 0 60%;
   min-width: 0;
-  padding: 16px;
+  padding: 20px; /* Increased from 16px */
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px; /* Increased from 8px */
+  height: fit-content;
 }
 
 .notes-title {
-  font-size: 14px;
+  font-size: 15px; /* Increased from 14px */
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0; /* Increased margin */
   line-height: 1.3;
 }
 
 .notes-text {
-  font-size: 13px;
+  font-size: 14px; /* Increased from 13px */
   color: #1e293b;
-  line-height: 1.5;
+  line-height: 1.6; /* Increased from 1.5 */
   white-space: pre-wrap;
   margin: 0;
 }
 
 /* Touchpoints Section */
 .touchpoints-section-redesigned {
-  padding: 24px;
+  padding: 32px; /* Increased from 24px */
   background: #f8fafc;
 }
 
@@ -713,16 +855,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: 24px; /* Increased from 16px */
+  padding-bottom: 16px; /* Increased from 12px */
   border-bottom: 1px solid #e2e8f0;
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
+  gap: 12px; /* Increased from 8px */
+  font-size: 18px; /* Increased from 15px */
   font-weight: 600;
   color: #1e293b;
 }
@@ -1180,10 +1322,26 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
-  .controls-split {
-    flex-direction: column;
-    gap: 12px;
+@media (max-width: 1200px) {
+  .sliding-panel-content {
+    width: 70%; /* Slightly wider on medium screens */
+    min-width: 550px;
+  }
+  
+  .contact-company-section,
+  .contact-social-section {
+    grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    gap: 24px;
+  }
+}
+
+@media (max-width: 992px) {
+  .top-navigation {
+    padding: 0 16px;
+  }
+  
+  .main-content {
+    padding: 16px;
   }
   
   .search-section,
@@ -1196,7 +1354,23 @@ body {
   }
   
   .sliding-panel-content {
-    width: 400px;
+    width: 80%; /* Even wider on tablets */
+    min-width: 500px;
+  }
+  
+  .contact-head-section {
+    padding: 24px;
+    gap: 16px;
+  }
+  
+  .contact-avatar-large {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+  }
+  
+  .contact-name-primary {
+    font-size: 20px;
   }
 }
 
@@ -1232,6 +1406,25 @@ body {
     width: 100%;
     height: 100vh;
     top: 0;
+    min-width: unset;
+  }
+  
+  .contact-head-section {
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .contact-status-actions {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .contact-company-section,
+  .contact-social-section {
+    padding: 20px;
   }
   
   .nav-action-btn {
@@ -1243,45 +1436,59 @@ body {
 
 /* Social Media & Metrics Section */
 .contact-social-section {
-  padding: 16px 0;
+  padding: 32px; /* Increased from 16px 0 */
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two-column layout for social and metrics */
+  gap: 32px;
+  align-items: start;
+}
+
+.social-media-links {
+  min-width: 0;
+}
+
+.crm-metrics {
+  min-width: 0;
 }
 
 .subsection-title {
-  font-size: 14px;
+  font-size: 16px; /* Increased from 14px */
   font-weight: 600;
-  color: #374151;
-  margin: 0 0 12px 0;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 6px;
+  color: #1e293b; /* Darker color */
+  margin: 0 0 16px 0; /* Increased margin */
+  border-bottom: 2px solid #e2e8f0; /* Thicker border */
+  padding-bottom: 8px; /* Increased padding */
 }
 
 .social-links-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Larger minimum */
+  gap: 12px; /* Increased from 8px */
+  margin-bottom: 0; /* Remove bottom margin since we're in a grid */
 }
 
 .social-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px; /* Increased from 6px */
+  padding: 12px 16px; /* Increased from 8px 12px */
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 8px; /* Increased from 6px */
   text-decoration: none;
   color: #475569;
-  font-size: 13px;
+  font-size: 14px; /* Increased from 13px */
   font-weight: 500;
   transition: all 0.2s ease;
+  min-height: 48px;
 }
 
 .social-link:hover {
   background: #e2e8f0;
   border-color: #cbd5e1;
   color: #334155;
-  transform: translateY(-1px);
+  transform: translateY(-2px); /* Increased from -1px */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .social-link.linkedin:hover {
@@ -1315,23 +1522,24 @@ body {
 }
 
 .metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Increased from 12px */
 }
 
 .metric-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  padding: 16px; /* Increased from 10px 12px */
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 8px; /* Increased from 6px */
+  min-height: 56px;
 }
 
 .metric-label {
-  font-size: 13px;
+  font-size: 14px; /* Increased from 13px */
   color: #64748b;
   font-weight: 500;
 }

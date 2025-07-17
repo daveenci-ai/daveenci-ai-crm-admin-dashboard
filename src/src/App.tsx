@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Login from './Login';
 import './App.css';
-import { API_CONFIG, CONTACT_STATUSES, INDUSTRY_OPTIONS, TOUCHPOINT_SOURCES, type ContactStatus, type Industry, type TouchpointSource } from './config';
+import { API_CONFIG, type ContactStatus, type TouchpointSource } from './config';
 
 // Configure axios to send cookies
 axios.defaults.withCredentials = true;
@@ -107,7 +107,6 @@ function App() {
   
   // App state
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [recentTouchpoints, setRecentTouchpoints] = useState<RecentTouchpoint[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
   const [isContactsLoading, setIsContactsLoading] = useState(true);
@@ -119,7 +118,7 @@ function App() {
   
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('PROSPECT');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [ownerFilter, setOwnerFilter] = useState<string>('All Owners');
   const [timeFilter, setTimeFilter] = useState<string>('All Time');
   const [recentActivityFilter, setRecentActivityFilter] = useState<string>('All Activity');
@@ -175,13 +174,7 @@ function App() {
 
   // Form state management
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
-  const [showEditForm, setShowEditForm] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Touchpoint form state
   const [showTouchpointForm, setShowTouchpointForm] = useState(false);
@@ -206,7 +199,7 @@ function App() {
     }
     
     if (cachedTouchpoints) {
-      setRecentTouchpoints(cachedTouchpoints);
+      // setRecentTouchpoints(cachedTouchpoints); // This line was removed
       setIsTouchpointsLoading(false);
       setHasInitialData(true);
     }
@@ -220,16 +213,15 @@ function App() {
       if (user) {
         // Load data in parallel for better performance
         Promise.all([
-          fetchContacts(),
-          fetchRecentTouchpoints()
+          fetchContacts()
         ]);
       }
     };
 
     initializeApp();
-  }, [user]);
+  }, []); // Empty dependency array since we want this to run once on mount
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${API_CONFIG.BASE_URL}/auth/me`);
       setUser(response.data.user);
@@ -240,7 +232,7 @@ function App() {
     } finally {
       setIsAuthLoading(false);
     }
-  };
+  }, []);
 
   const handleLoginSuccess = (userData: { id: number; email: string; name: string }) => {
     setUser(userData);
@@ -257,7 +249,7 @@ function App() {
       delete axios.defaults.headers.common['Authorization'];
       setUser(null);
       setContacts([]);
-      setRecentTouchpoints([]);
+      // setRecentTouchpoints([]); // This line was removed
     }
   };
 
@@ -286,7 +278,7 @@ function App() {
     try {
       setIsTouchpointsLoading(true);
       const response = await axios.get(`${API_CONFIG.BASE_URL}/touchpoints/recent`);
-      setRecentTouchpoints(response.data);
+      // setRecentTouchpoints(response.data); // This line was removed
       setCachedData('touchpoints', response.data);
       setHasInitialData(true);
     } catch (err) {
@@ -418,11 +410,9 @@ function App() {
       leadScore: '0',
       opportunityScore: '0',
       notes: ''
-    });
-    setShowCreateForm(false);
-    setIsCreating(false);
-    setEditingContact(null);
-    setShowEditForm(false);
+          });
+      setShowCreateForm(false);
+      setEditingContact(null);
   };
 
   const openEditForm = (contact: Contact) => {
@@ -449,7 +439,7 @@ function App() {
       notes: contact.notes || ''
     });
     setEditingContact(contact);
-    setShowEditForm(true);
+    setShowCreateForm(true);
   };
 
   const createTouchpoint = async (e: React.FormEvent) => {
@@ -658,10 +648,6 @@ function App() {
     }
   };
 
-  // Calculate dashboard stats
-  const totalLeads = contacts.length;
-  const convertedLeads = contacts.filter(contact => contact.status === 'CLIENT').length;
-
   // Calculate funnel data
   const prospectCount = contacts.filter(c => c.status === 'PROSPECT').length;
   const leadCount = contacts.filter(c => c.status === 'LEAD').length;
@@ -694,14 +680,15 @@ function App() {
 
   // Filter and sort contacts
   const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              (contact.primaryEmail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.secondaryEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.address?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = contact.status === statusFilter;
+    try {
+      const matchesSearch = contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (contact.primaryEmail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.secondaryEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.address?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'ALL' || contact.status === statusFilter;
     
     const matchesOwner = ownerFilter === 'All Owners' || contact.user.name === ownerFilter;
     
@@ -764,7 +751,11 @@ function App() {
       }
     }
     
-    return matchesSearch && matchesStatus && matchesOwner && matchesTimeFilter && matchesActivityFilter;
+      return matchesSearch && matchesStatus && matchesOwner && matchesTimeFilter && matchesActivityFilter;
+    } catch (error) {
+      console.error('Error filtering contact:', error);
+      return false;
+    }
   }).sort((a, b) => {
     let aValue: any;
     let bValue: any;
@@ -896,6 +887,68 @@ function App() {
           </div>
         )}
 
+        {/* Pipeline Stats Bar */}
+        <div className="pipeline-stats-bar">
+          <div className="pipeline-stats-container">
+            <div 
+              className="stat-card churned"
+              onClick={() => setStatusFilter('CHURNED')}
+            >
+              <div className="stat-number">{churnedCount}</div>
+              <div className="stat-label">CHURNED</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+            <div 
+              className="stat-card declined"
+              onClick={() => setStatusFilter('DECLINED')}
+            >
+              <div className="stat-number">{declinedCount}</div>
+              <div className="stat-label">DECLINED</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+            <div 
+              className="stat-card unqualified"
+              onClick={() => setStatusFilter('UNQUALIFIED')}
+            >
+              <div className="stat-number">{disqualifiedCount}</div>
+              <div className="stat-label">DISQUALIFIED</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+            <div 
+              className="stat-card prospects highlight"
+              onClick={() => setStatusFilter('PROSPECT')}
+            >
+              <div className="stat-number">{prospectCount}</div>
+              <div className="stat-label">PROSPECTS</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+            <div 
+              className="stat-card leads"
+              onClick={() => setStatusFilter('LEAD')}
+            >
+              <div className="stat-number">{leadCount}</div>
+              <div className="stat-label">LEADS</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+            <div 
+              className="stat-card opportunities"
+              onClick={() => setStatusFilter('OPPORTUNITY')}
+            >
+              <div className="stat-number">{opportunityCount}</div>
+              <div className="stat-label">OPPORTUNITIES</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+            <div 
+              className="stat-card clients"
+              onClick={() => setStatusFilter('CLIENT')}
+            >
+              <div className="stat-number">{clientCount}</div>
+              <div className="stat-label">CLIENTS</div>
+              <div className="stat-growth">+100% 28d</div>
+            </div>
+          </div>
+        </div>
+
         {/* Contacts View */}
           <div className="contacts-view">
 
@@ -916,7 +969,8 @@ function App() {
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="status-filter-dropdown"
                   >
-                    <option value="PROSPECT">All Prospects ({prospectCount})</option>
+                    <option value="ALL">All Contacts ({contacts.length})</option>
+                    <option value="PROSPECT">Prospects ({prospectCount})</option>
                     <option value="LEAD">Leads ({leadCount})</option>
                     <option value="OPPORTUNITY">Opportunities ({opportunityCount})</option>
                     <option value="CLIENT">Clients ({clientCount})</option>
@@ -965,7 +1019,7 @@ function App() {
                   <div className="table-info">
                     <span className="contacts-count">
                       {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}
-                      {statusFilter !== 'PROSPECT' && ` • Filtered by ${getStatusLabel(statusFilter)}`}
+                      {statusFilter !== 'ALL' && ` • Filtered by ${getStatusLabel(statusFilter)}`}
                     </span>
                   </div>
                   <div className="table-actions">
