@@ -10,6 +10,17 @@ axios.defaults.withCredentials = true;
 // Add request timeout
 axios.defaults.timeout = API_CONFIG.TIMEOUT;
 
+// Initialize auth token from localStorage on app load
+const initializeAuth = () => {
+  const storedToken = localStorage.getItem('authToken');
+  if (storedToken) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+  }
+};
+
+// Call initialization
+initializeAuth();
+
 interface Contact {
   id: number;
   name: string;
@@ -47,20 +58,6 @@ interface Touchpoint {
   note: string;
   source: 'MANUAL' | 'EMAIL' | 'SMS' | 'PHONE' | 'IN_PERSON' | 'EVENT' | 'OTHER';
   createdAt: string;
-}
-
-interface RecentTouchpoint {
-  id: number;
-  note: string;
-  source: TouchpointSource;
-  createdAt: string;
-  contact: {
-    id: number;
-    name: string;
-    primaryEmail: string;
-    company?: string;
-    status: ContactStatus;
-  };
 }
 
 // Cache utilities
@@ -223,9 +220,16 @@ function App() {
 
   const checkAuthStatus = useCallback(async () => {
     try {
+      // First, check if we have a stored token and set it up
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      }
+      
       const response = await axios.get(`${API_CONFIG.BASE_URL}/auth/me`);
       setUser(response.data.user);
     } catch (err) {
+      // Clear any invalid tokens
       localStorage.removeItem('authToken');
       delete axios.defaults.headers.common['Authorization'];
       setUser(null);
