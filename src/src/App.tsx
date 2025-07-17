@@ -206,17 +206,20 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       await checkAuthStatus();
-      
-      if (user) {
-        // Load data in parallel for better performance
-        Promise.all([
-          fetchContacts()
-        ]);
-      }
     };
 
     initializeApp();
   }, []); // Empty dependency array since we want this to run once on mount
+
+  // Load data when user is authenticated
+  useEffect(() => {
+    if (user) {
+      // Load data in parallel for better performance
+      Promise.all([
+        fetchContacts()
+      ]);
+    }
+  }, [user]); // Trigger when user changes
 
   const checkAuthStatus = useCallback(async () => {
     try {
