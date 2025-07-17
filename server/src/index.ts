@@ -166,7 +166,7 @@ app.post('/api/contacts', requireAuth, async (req, res) => {
         website,
         address,
         source,
-        status: status || 'PROSPECTS',
+        status: status || 'PROSPECT',
         notes,
         userId
       },
@@ -442,8 +442,7 @@ app.listen(port, () => {
 });
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
+process.on('SIGTERM', () => {
   console.log('\n🛑 Shutting down server...');
-  await prisma.$disconnect();
   process.exit(0);
 }); 

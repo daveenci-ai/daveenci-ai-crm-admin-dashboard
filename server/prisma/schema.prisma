@@ -37,7 +37,10 @@ model Contact {
   website        String?
   address        String?
   source         String?
-  status         Status
+  status         Status       @default(PROSPECT)
+  sentiment      Sentiment    @default(NEUTRAL)
+  leadScore      Decimal?     @map("lead_score") @db.Decimal(3, 2)
+  opportunityScore Decimal?   @map("opportunity_score") @db.Decimal(3, 2)
   notes          String?
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -54,27 +57,30 @@ model Contact {
 }
 
 model ContactTemp {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   name           String
-  primaryEmail   String   @map("primary_email")
-  secondaryEmail String?  @map("secondary_email")
-  primaryPhone   String?  @map("primary_phone")
-  secondaryPhone String?  @map("secondary_phone")
+  primaryEmail   String    @map("primary_email")
+  secondaryEmail String?   @map("secondary_email")
+  primaryPhone   String?   @map("primary_phone")
+  secondaryPhone String?   @map("secondary_phone")
   company        String?
   industry       String?
   website        String?
   address        String?
   source         String?
-  status         Status
+  status         Status    @default(PROSPECT)
+  sentiment      Sentiment @default(NEUTRAL)
+  leadScore      Decimal?  @map("lead_score") @db.Decimal(3, 2)
+  opportunityScore Decimal? @map("opportunity_score") @db.Decimal(3, 2)
   notes          String?
-  userId         Int      @map("user_id")
-  linkedinUrl    String?  @map("linkedin_url")
-  facebookUrl    String?  @map("facebook_url")
-  instagramUrl   String?  @map("instagram_url")
-  youtubeUrl     String?  @map("youtube_url")
-  tiktokUrl      String?  @map("tiktok_url")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  userId         Int       @map("user_id")
+  linkedinUrl    String?   @map("linkedin_url")
+  facebookUrl    String?   @map("facebook_url")
+  instagramUrl   String?   @map("instagram_url")
+  youtubeUrl     String?   @map("youtube_url")
+  tiktokUrl      String?   @map("tiktok_url")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   @@map("contacts_temp")
 }
@@ -104,6 +110,80 @@ model AvatarGenerated {
 
   @@index([avatarId], map: "idx_avatars_generated_avatar_id")
   @@map("avatars_generated")
+}
+
+model BlogPost {
+  id                Int       @id @default(autoincrement())
+  title             String    @db.VarChar(500)
+  slug              String    @unique @db.VarChar(500)
+  content           String
+  excerpt           String?
+  tags              String?
+  metaDescription   String?   @map("meta_description") @db.VarChar(160)
+  metaKeywords      String?   @map("meta_keywords")
+  seoScore          Decimal?  @default(0.0) @map("seo_score") @db.Decimal(3, 2)
+  featuredImageUrl  String?   @map("featured_image_url")
+  status            String?   @default("published") @db.VarChar(20)
+  isFeatured        Boolean   @default(false) @map("is_featured")
+  viewCount         Int       @default(0) @map("view_count")
+  readTimeMinutes   Int?      @map("read_time_minutes")
+  publishedAt       DateTime? @default(now()) @map("published_at")
+  createdAt         DateTime? @default(now()) @map("created_at")
+  updatedAt         DateTime? @default(now()) @map("updated_at")
+  createdByLlm      Boolean   @default(true) @map("created_by_llm")
+  llmPrompt         String?   @map("llm_prompt")
+
+  @@index([createdByLlm], map: "idx_blog_posts_created_by_llm")
+  @@index([isFeatured], map: "idx_blog_posts_featured")
+  @@index([publishedAt], map: "idx_blog_posts_published_at")
+  @@index([slug], map: "idx_blog_posts_slug")
+  @@index([status], map: "idx_blog_posts_status")
+  @@map("blog_posts")
+}
+
+model ChatSummary {
+  id                   Int       @id @default(autoincrement())
+  interactionDate      DateTime  @map("interaction_date") @db.Date
+  contactName          String?   @map("contact_name") @db.VarChar(255)
+  contactEmail         String?   @map("contact_email") @db.VarChar(255)
+  contactPhone         String?   @map("contact_phone") @db.VarChar(50)
+  companyName          String?   @map("company_name") @db.VarChar(255)
+  chatSummary          String    @map("chat_summary")
+  servicesDiscussed    Json      @default("[]") @map("services_discussed")
+  keyPainPoints        Json      @default("[]") @map("key_pain_points")
+  callToActionOffered  Boolean   @default(false) @map("call_to_action_offered")
+  nextStep             String?   @map("next_step")
+  leadQualification    String    @default("Cold") @map("lead_qualification") @db.VarChar(10)
+  createdAt            DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([companyName], map: "idx_chat_summaries_company")
+  @@index([createdAt], map: "idx_chat_summaries_created")
+  @@index([interactionDate], map: "idx_chat_summaries_date")
+  @@index([contactEmail], map: "idx_chat_summaries_email")
+  @@index([leadQualification], map: "idx_chat_summaries_qualification")
+  @@map("chat_summaries")
+}
+
+model ConversationContext {
+  id                    Int       @id @default(autoincrement())
+  sessionId             String    @unique @map("session_id") @db.VarChar(255)
+  userInfo              Json      @default("{}") @map("user_info")
+  conversationStage     String?   @default("greeting") @map("conversation_stage") @db.VarChar(50)
+  servicesDiscussed     Json      @default("[]") @map("services_discussed")
+  painPoints            Json      @default("[]") @map("pain_points")
+  lastInteraction       DateTime? @map("last_interaction") @db.Timestamptz(6)
+  messageCount          Int       @default(0) @map("message_count")
+  conversationQuality   Decimal?  @default(0.5) @map("conversation_quality") @db.Decimal(3, 2)
+  userSentiment         String?   @default("neutral") @map("user_sentiment") @db.VarChar(20)
+  createdAt             DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([lastInteraction], map: "idx_conversation_contexts_last_interaction")
+  @@index([userSentiment], map: "idx_conversation_contexts_sentiment")
+  @@index([sessionId], map: "idx_conversation_contexts_session")
+  @@index([conversationStage], map: "idx_conversation_contexts_stage")
+  @@index([updatedAt], map: "idx_conversation_contexts_updated")
+  @@map("conversation_contexts")
 }
 
 model Touchpoint {
@@ -157,15 +237,23 @@ model EventParticipant {
 }
 
 enum Status {
-  PROSPECTS
-  QUALIFIED_LEADS
-  OPPORTUNITIES
-  CONVERTED_CLIENTS
-  DISQUALIFIED_LEADS
-  DECLINED_OPPORTUNITIES
-  CHURNED_CLIENTS
+  PROSPECT
+  LEAD
+  OPPORTUNITY
+  CLIENT
+  CHURNED
+  DECLINED
+  UNQUALIFIED
 
   @@map("status")
+}
+
+enum Sentiment {
+  GOOD
+  NEUTRAL
+  BAD
+
+  @@map("sentiment")
 }
 
 enum TouchpointSource {
