@@ -115,10 +115,7 @@ function App() {
   
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [ownerFilter, setOwnerFilter] = useState<string>('All Owners');
   const [timeFilter, setTimeFilter] = useState<string>('All Time');
-  const [recentActivityFilter, setRecentActivityFilter] = useState<string>('All Activity');
   
   // Table sorting
   const [sortField, setSortField] = useState<string>('createdAt');
@@ -695,70 +692,30 @@ function App() {
         contact.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contact.address?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesStatus = statusFilter === 'ALL' || contact.status === statusFilter;
-    
-    const matchesOwner = ownerFilter === 'All Owners' || contact.user.name === ownerFilter;
-    
-    // Time filter based on contact creation date
-    let matchesTimeFilter = true;
-    if (timeFilter !== 'All Time') {
-      const contactDate = new Date(contact.createdAt);
-      const now = new Date();
-      const diffDays = Math.floor((now.getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      switch (timeFilter) {
-        case 'Last Week':
-          matchesTimeFilter = diffDays <= 7;
-          break;
-        case 'Last 28 Days':
-          matchesTimeFilter = diffDays <= 28;
-          break;
-        case 'Last 6 Months':
-          matchesTimeFilter = diffDays <= 180;
-          break;
-        case 'Last 12 Months':
-          matchesTimeFilter = diffDays <= 365;
-          break;
-      }
-    }
-    
-    // Recent Activity filter based on latest touchpoint
-    let matchesActivityFilter = true;
-    if (recentActivityFilter !== 'All Activity') {
-      const latestTouchpoint = contact.touchpoints?.length > 0 ? 
-        contact.touchpoints.reduce((latest, current) => 
-          new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
-        ) : null;
-      
-      if (latestTouchpoint) {
-        const touchpointDate = new Date(latestTouchpoint.createdAt);
+      // Time filter based on contact creation date
+      let matchesTimeFilter = true;
+      if (timeFilter !== 'All Time') {
+        const contactDate = new Date(contact.createdAt);
         const now = new Date();
-        const diffDays = Math.floor((now.getTime() - touchpointDate.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor((now.getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
         
-        switch (recentActivityFilter) {
+        switch (timeFilter) {
           case 'Last Week':
-            matchesActivityFilter = diffDays <= 7;
+            matchesTimeFilter = diffDays <= 7;
             break;
           case 'Last 28 Days':
-            matchesActivityFilter = diffDays <= 28;
+            matchesTimeFilter = diffDays <= 28;
             break;
           case 'Last 6 Months':
-            matchesActivityFilter = diffDays <= 180;
+            matchesTimeFilter = diffDays <= 180;
             break;
           case 'Last 12 Months':
-            matchesActivityFilter = diffDays <= 365;
-            break;
-          case 'No Activity':
-            matchesActivityFilter = false;
+            matchesTimeFilter = diffDays <= 365;
             break;
         }
-      } else {
-        // No touchpoints
-        matchesActivityFilter = recentActivityFilter === 'No Activity';
       }
-    }
     
-      return matchesSearch && matchesStatus && matchesOwner && matchesTimeFilter && matchesActivityFilter;
+      return matchesSearch && matchesTimeFilter;
     } catch (error) {
       console.error('Error filtering contact:', error);
       return false;
@@ -846,11 +803,7 @@ function App() {
           </div>
         </div>
         <div className="nav-links">
-          <button 
-            className="nav-item active"
-          >
-            All Contacts
-          </button>
+          {/* Navigation links removed as requested */}
         </div>
         <div className="user-actions">
           <button 
@@ -865,17 +818,6 @@ function App() {
             title="Export filtered contacts to CSV file"
           >
             📄 Export CSV ({filteredContacts.length})
-          </button>
-          <button 
-            className="nav-action-btn refresh-btn"
-            onClick={() => {
-              fetchContacts();
-              fetchRecentTouchpoints();
-            }}
-            title="Refresh data"
-            disabled={isContactsLoading || isTouchpointsLoading}
-          >
-            🔄 Refresh
           </button>
           <button className="nav-action-btn logout-btn" onClick={handleLogout}>
             Logout
@@ -897,58 +839,43 @@ function App() {
         {/* Pipeline Stats Bar */}
         <div className="pipeline-stats-bar">
           <div className="pipeline-stats-container">
-            <div 
-              className="stat-card churned"
-              onClick={() => setStatusFilter('CHURNED')}
-            >
+            <div className="stat-card churned">
               <div className="stat-number">{churnedCount}</div>
               <div className="stat-label">CHURNED</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
-            <div 
-              className="stat-card declined"
-              onClick={() => setStatusFilter('DECLINED')}
-            >
+            <div className="pipeline-arrow">→</div>
+            <div className="stat-card declined">
               <div className="stat-number">{declinedCount}</div>
               <div className="stat-label">DECLINED</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
-            <div 
-              className="stat-card unqualified"
-              onClick={() => setStatusFilter('UNQUALIFIED')}
-            >
+            <div className="pipeline-arrow">→</div>
+            <div className="stat-card unqualified">
               <div className="stat-number">{disqualifiedCount}</div>
-              <div className="stat-label">DISQUALIFIED</div>
+              <div className="stat-label">UNQUALIFIED</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
-            <div 
-              className="stat-card prospects highlight"
-              onClick={() => setStatusFilter('PROSPECT')}
-            >
+            <div className="pipeline-arrow">→</div>
+            <div className="stat-card prospects">
               <div className="stat-number">{prospectCount}</div>
               <div className="stat-label">PROSPECTS</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
-            <div 
-              className="stat-card leads"
-              onClick={() => setStatusFilter('LEAD')}
-            >
+            <div className="pipeline-arrow">→</div>
+            <div className="stat-card leads highlight">
               <div className="stat-number">{leadCount}</div>
               <div className="stat-label">LEADS</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
-            <div 
-              className="stat-card opportunities"
-              onClick={() => setStatusFilter('OPPORTUNITY')}
-            >
+            <div className="pipeline-arrow">→</div>
+            <div className="stat-card opportunities">
               <div className="stat-number">{opportunityCount}</div>
               <div className="stat-label">OPPORTUNITIES</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
-            <div 
-              className="stat-card clients"
-              onClick={() => setStatusFilter('CLIENT')}
-            >
+            <div className="pipeline-arrow">→</div>
+            <div className="stat-card clients">
               <div className="stat-number">{clientCount}</div>
               <div className="stat-label">CLIENTS</div>
               <div className="stat-growth">+100% 28d</div>
@@ -972,29 +899,6 @@ function App() {
                 </div>
                 <div className="filters-section">
                   <select 
-                    value={statusFilter} 
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="status-filter-dropdown"
-                  >
-                    <option value="ALL">All Contacts ({contacts.length})</option>
-                    <option value="PROSPECT">Prospects ({prospectCount})</option>
-                    <option value="LEAD">Leads ({leadCount})</option>
-                    <option value="OPPORTUNITY">Opportunities ({opportunityCount})</option>
-                    <option value="CLIENT">Clients ({clientCount})</option>
-                    <option value="UNQUALIFIED">Unqualified ({disqualifiedCount})</option>
-                    <option value="DECLINED">Declined ({declinedCount})</option>
-                    <option value="CHURNED">Churned ({churnedCount})</option>
-                  </select>
-                  <select 
-                    value={ownerFilter} 
-                    onChange={(e) => setOwnerFilter(e.target.value)}
-                  >
-                    <option>All Owners</option>
-                    {Array.from(new Set(contacts.map(contact => contact.user.name))).map(owner => (
-                      <option key={owner} value={owner}>{owner}</option>
-                    ))}
-                  </select>
-                  <select 
                     value={timeFilter} 
                     onChange={(e) => setTimeFilter(e.target.value)}
                   >
@@ -1004,17 +908,16 @@ function App() {
                     <option value="Last 6 Months">Last 6 Months</option>
                     <option value="Last 12 Months">Last 12 Months</option>
                   </select>
-                  <select 
-                    value={recentActivityFilter} 
-                    onChange={(e) => setRecentActivityFilter(e.target.value)}
+                  <button 
+                    className="refresh-table-btn"
+                    onClick={() => {
+                      fetchContacts();
+                      fetchRecentTouchpoints();
+                    }}
+                    title="Refresh contacts"
                   >
-                    <option>All Activity</option>
-                    <option value="Last Week">Active Last Week</option>
-                    <option value="Last 28 Days">Active Last 28 Days</option>
-                    <option value="Last 6 Months">Active Last 6 Months</option>
-                    <option value="Last 12 Months">Active Last 12 Months</option>
-                    <option value="No Activity">No Activity</option>
-                  </select>
+                    🔄 Refresh
+                  </button>
                 </div>
               </div>
             </div>
@@ -1026,20 +929,7 @@ function App() {
                   <div className="table-info">
                     <span className="contacts-count">
                       {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}
-                      {statusFilter !== 'ALL' && ` • Filtered by ${getStatusLabel(statusFilter)}`}
                     </span>
-                  </div>
-                  <div className="table-actions">
-                    <button 
-                      className="refresh-table-btn"
-                      onClick={() => {
-                        fetchContacts();
-                        fetchRecentTouchpoints();
-                      }}
-                      title="Refresh contacts"
-                    >
-                      🔄 Refresh
-                    </button>
                   </div>
                 </div>
                 <div className="contacts-table">
@@ -1207,14 +1097,21 @@ function App() {
                     </button>
                   </div>
                   <div className="contact-details">
-                    {/* Head Section: Name, Contact, Status, Actions, Source, Added */}
+                    {/* Head Section: Avatar, Name, Contact, Company, Social Media, Scores, Status, Actions */}
                     <div className="contact-head-section">
-                      <div className="contact-avatar-large">
+                      <div className="contact-avatar-large" style={{
+                        background: selectedContact.sentiment === 'GOOD' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' :
+                                   selectedContact.sentiment === 'NEUTRAL' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' :
+                                   selectedContact.sentiment === 'BAD' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' :
+                                   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      }}>
                         {selectedContact.name.charAt(0).toUpperCase()}
                       </div>
                       
                       <div className="contact-essential-info">
                         <h2 className="contact-name-primary">{selectedContact.name}</h2>
+                        
+                        {/* Contact Methods */}
                         <div className="contact-methods">
                           <div className="contact-method">
                             📧 {selectedContact.primaryEmail}
@@ -1225,6 +1122,67 @@ function App() {
                             {selectedContact.secondaryPhone && <span className="secondary-info"> • {selectedContact.secondaryPhone}</span>}
                           </div>
                         </div>
+
+                        {/* Company Info */}
+                        {selectedContact.company && (
+                          <div className="company-info-head">
+                            <h3 className="company-name-head">{selectedContact.company}</h3>
+                            {selectedContact.address && (
+                              <div className="address-info">
+                                📍 {selectedContact.address}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Social Media Icons */}
+                        {(selectedContact.linkedinUrl || selectedContact.facebookUrl || selectedContact.instagramUrl || selectedContact.youtubeUrl || selectedContact.tiktokUrl) && (
+                          <div className="social-media-icons-head">
+                            {selectedContact.linkedinUrl && (
+                              <a href={selectedContact.linkedinUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head linkedin" title="LinkedIn">
+                                🔗
+                              </a>
+                            )}
+                            {selectedContact.facebookUrl && (
+                              <a href={selectedContact.facebookUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head facebook" title="Facebook">
+                                📘
+                              </a>
+                            )}
+                            {selectedContact.instagramUrl && (
+                              <a href={selectedContact.instagramUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head instagram" title="Instagram">
+                                📸
+                              </a>
+                            )}
+                            {selectedContact.youtubeUrl && (
+                              <a href={selectedContact.youtubeUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head youtube" title="YouTube">
+                                📺
+                              </a>
+                            )}
+                            {selectedContact.tiktokUrl && (
+                              <a href={selectedContact.tiktokUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head tiktok" title="TikTok">
+                                🎵
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Lead/Opportunity Score */}
+                        {((selectedContact.status === 'LEAD' && selectedContact.leadScore !== undefined && selectedContact.leadScore !== null) ||
+                          (selectedContact.status === 'OPPORTUNITY' && selectedContact.opportunityScore !== undefined && selectedContact.opportunityScore !== null)) && (
+                          <div className="score-info-head">
+                            <span className="score-label">
+                              {selectedContact.status === 'LEAD' ? 'Lead Score:' : 'Opportunity Score:'}
+                            </span>
+                            <span className="score-value">
+                              {selectedContact.status === 'LEAD' 
+                                ? Number(selectedContact.leadScore).toFixed(2)
+                                : Number(selectedContact.opportunityScore).toFixed(2)
+                              }
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Meta Info */}
                         <div className="contact-meta-info">
                           <div className="meta-item">
                             <span className="meta-label">Source:</span>
@@ -1263,117 +1221,15 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Company Section */}
-                    {(selectedContact.company || selectedContact.industry || selectedContact.website || selectedContact.address || (selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing')) && (
+                    {/* Notes Section */}
+                    {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
                       <>
                         <div className="section-divider"></div>
-                        <div className="contact-company-section">
-                          <div className="company-main-info">
-                            {selectedContact.company && (
-                              <h3 className="company-name">{selectedContact.company}</h3>
-                            )}
-                             {selectedContact.address && (
-                                <div className="company-detail">
-                                  <span className="detail-value">{selectedContact.address}</span>
-                                </div>
-                              )}
-                            <div className="company-details">
-                              {selectedContact.website && (
-                                <div className="company-detail">
-                                  <span className="detail-value">
-                                    <a href={selectedContact.website.startsWith('http') ? selectedContact.website : `https://${selectedContact.website}`} target="_blank" rel="noopener noreferrer">
-                                      {selectedContact.website}
-                                    </a>
-                                  </span>
-                                </div>
-                              )}
-                              {selectedContact.industry && (
-                                <div className="company-detail">
-                                  <span className="detail-value">{selectedContact.industry}</span>
-                                </div>
-                              )}
-                            </div>
+                        <div className="notes-section">
+                          <h3 className="section-title">Notes</h3>
+                          <div className="notes-content">
+                            <p className="notes-text">{selectedContact.notes}</p>
                           </div>
-                          
-                          {/* Notes on the right side */}
-                          {selectedContact.notes && selectedContact.notes.trim() !== '' && selectedContact.notes !== 'Nothing' && (
-                            <div className="company-notes">
-                              <p className="notes-text">{selectedContact.notes}</p>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-
-                    {/* Social Media & Scores Section */}
-                    {(selectedContact.linkedinUrl || selectedContact.facebookUrl || selectedContact.instagramUrl || selectedContact.youtubeUrl || selectedContact.tiktokUrl || selectedContact.sentiment || selectedContact.leadScore || selectedContact.opportunityScore) && (
-                      <>
-                        <div className="section-divider"></div>
-                        <div className="contact-social-section">
-                          
-                          {/* Social Media Links */}
-                          {(selectedContact.linkedinUrl || selectedContact.facebookUrl || selectedContact.instagramUrl || selectedContact.youtubeUrl || selectedContact.tiktokUrl) && (
-                            <div className="social-media-links">
-                              <h4 className="subsection-title">Social Media</h4>
-                              <div className="social-links-grid">
-                                {selectedContact.linkedinUrl && (
-                                  <a href={selectedContact.linkedinUrl} target="_blank" rel="noopener noreferrer" className="social-link linkedin">
-                                    🔗 LinkedIn
-                                  </a>
-                                )}
-                                {selectedContact.facebookUrl && (
-                                  <a href={selectedContact.facebookUrl} target="_blank" rel="noopener noreferrer" className="social-link facebook">
-                                    📘 Facebook
-                                  </a>
-                                )}
-                                {selectedContact.instagramUrl && (
-                                  <a href={selectedContact.instagramUrl} target="_blank" rel="noopener noreferrer" className="social-link instagram">
-                                    📸 Instagram
-                                  </a>
-                                )}
-                                {selectedContact.youtubeUrl && (
-                                  <a href={selectedContact.youtubeUrl} target="_blank" rel="noopener noreferrer" className="social-link youtube">
-                                    📺 YouTube
-                                  </a>
-                                )}
-                                {selectedContact.tiktokUrl && (
-                                  <a href={selectedContact.tiktokUrl} target="_blank" rel="noopener noreferrer" className="social-link tiktok">
-                                    🎵 TikTok
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* CRM Metrics */}
-                          {(selectedContact.sentiment || selectedContact.leadScore || selectedContact.opportunityScore) && (
-                            <div className="crm-metrics">
-                              <h4 className="subsection-title">CRM Metrics</h4>
-                              <div className="metrics-grid">
-                                {selectedContact.sentiment && (
-                                  <div className="metric-item">
-                                    <span className="metric-label">Sentiment:</span>
-                                    <span className={`metric-value sentiment-${selectedContact.sentiment.toLowerCase()}`}>
-                                      {selectedContact.sentiment === 'GOOD' ? '😊 Good' : 
-                                       selectedContact.sentiment === 'NEUTRAL' ? '😐 Neutral' : '😞 Bad'}
-                                    </span>
-                                  </div>
-                                )}
-                                {selectedContact.leadScore !== undefined && selectedContact.leadScore !== null && (
-                                  <div className="metric-item">
-                                    <span className="metric-label">Lead Score:</span>
-                                    <span className="metric-value">{Number(selectedContact.leadScore).toFixed(2)}</span>
-                                  </div>
-                                )}
-                                {selectedContact.opportunityScore !== undefined && selectedContact.opportunityScore !== null && (
-                                  <div className="metric-item">
-                                    <span className="metric-label">Opportunity Score:</span>
-                                    <span className="metric-value">{Number(selectedContact.opportunityScore).toFixed(2)}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </>
                     )}
@@ -1463,282 +1319,179 @@ function App() {
               </div>
               
               <form onSubmit={handleFormSubmit} className="contact-form">
-                {/* Basic Information Section */}
-                <div className="form-section">
-                  <h3 className="form-section-title">Basic Information</h3>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Full Name *</label>
-                      <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                        placeholder="John Doe"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Company</label>
-                      <input
-                        type="text"
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        placeholder="Company name"
-                      />
-                    </div>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Full Name *</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      placeholder="John Doe"
+                    />
                   </div>
-                </div>
 
-                {/* Contact Methods Section */}
-                <div className="form-section">
-                  <h3 className="form-section-title">Contact Methods</h3>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Primary Email *</label>
-                      <input
-                        type="email"
-                        value={formData.primaryEmail}
-                        onChange={(e) => setFormData({ ...formData, primaryEmail: e.target.value })}
-                        required
-                        placeholder="john@company.com"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Tooltip text="Optional alternative email address (personal, backup, etc.)">
-                        <label>Secondary Email</label>
-                      </Tooltip>
-                      <input
-                        type="email"
-                        value={formData.secondaryEmail}
-                        onChange={(e) => setFormData({ ...formData, secondaryEmail: e.target.value })}
-                        placeholder="john.personal@gmail.com"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Primary Phone</label>
-                      <input
-                        type="tel"
-                        value={formData.primaryPhone}
-                        onChange={(e) => setFormData({ ...formData, primaryPhone: e.target.value })}
-                        placeholder="+1 (555) 123-4567"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Secondary Phone</label>
-                      <input
-                        type="tel"
-                        value={formData.secondaryPhone}
-                        onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
-                        placeholder="+1 (555) 987-6543"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label>Company</label>
+                    <input
+                      type="text"
+                      value={formData.company}
+                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                      placeholder="Company name"
+                    />
                   </div>
-                </div>
 
-                {/* Business Information Section */}
-                <div className="form-section">
-                  <h3 className="form-section-title">Business Information</h3>
-                  <div className="form-grid">
-
-                    <div className="form-group">
-                      <Tooltip text="Select the primary industry this contact operates in">
-                        <label>Industry</label>
-                      </Tooltip>
-                      <select
-                        value={formData.industry}
-                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                      >
-                        <option value="">Select industry...</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Education">Education</option>
-                        <option value="Construction">Construction</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Consulting">Consulting</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Website</label>
-                      <input
-                        type="text"
-                        value={formData.website}
-                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        placeholder="company.com or https://company.com"
-                      />
-                    </div>
-
-                    <div className="form-group full-width">
-                      <label>Address</label>
-                      <textarea
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        rows={2}
-                        placeholder="123 Main St, City, State 12345"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label>Primary Email *</label>
+                    <input
+                      type="email"
+                      value={formData.primaryEmail}
+                      onChange={(e) => setFormData({ ...formData, primaryEmail: e.target.value })}
+                      required
+                      placeholder="john@company.com"
+                    />
                   </div>
-                </div>
 
-                {/* Social Media Section */}
-                <div className="form-section">
-                  <h3 className="form-section-title">Social Media & Online Presence</h3>
-                  <div className="form-grid">
-
-                    <div className="form-group">
-                      <label>LinkedIn URL</label>
-                      <input
-                        type="url"
-                        value={formData.linkedinUrl}
-                        onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
-                        placeholder="https://linkedin.com/in/username"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Facebook URL</label>
-                      <input
-                        type="url"
-                        value={formData.facebookUrl}
-                        onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
-                        placeholder="https://facebook.com/username"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Instagram URL</label>
-                      <input
-                        type="url"
-                        value={formData.instagramUrl}
-                        onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
-                        placeholder="https://instagram.com/username"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>YouTube URL</label>
-                      <input
-                        type="url"
-                        value={formData.youtubeUrl}
-                        onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
-                        placeholder="https://youtube.com/channel/..."
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>TikTok URL</label>
-                      <input
-                        type="url"
-                        value={formData.tiktokUrl}
-                        onChange={(e) => setFormData({ ...formData, tiktokUrl: e.target.value })}
-                        placeholder="https://tiktok.com/@username"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label>Secondary Email</label>
+                    <input
+                      type="email"
+                      value={formData.secondaryEmail}
+                      onChange={(e) => setFormData({ ...formData, secondaryEmail: e.target.value })}
+                      placeholder="john.personal@gmail.com"
+                    />
                   </div>
-                </div>
 
-                {/* CRM Information Section */}
-                <div className="form-section">
-                  <h3 className="form-section-title">CRM Information</h3>
-                  <div className="form-grid">
+                  <div className="form-group">
+                    <label>Primary Phone</label>
+                    <input
+                      type="tel"
+                      value={formData.primaryPhone}
+                      onChange={(e) => setFormData({ ...formData, primaryPhone: e.target.value })}
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  </div>
 
-                    <div className="form-group">
-                      <Tooltip text="How did you first discover or meet this contact?">
-                        <label>Source</label>
-                      </Tooltip>
-                      <select 
-                        value={formData.source}
-                        onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                      >
-                        <option value="">How did you find this contact?</option>
-                        <option value="WEBSITE">Website</option>
-                        <option value="REFERRAL">Referral</option>
-                        <option value="SOCIAL_MEDIA">Social Media</option>
-                        <option value="EMAIL">Email Campaign</option>
-                        <option value="PHONE">Phone Call</option>
-                        <option value="EVENT">Event</option>
-                        <option value="OTHER">Other</option>
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label>Secondary Phone</label>
+                    <input
+                      type="tel"
+                      value={formData.secondaryPhone}
+                      onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
+                      placeholder="+1 (555) 987-6543"
+                    />
+                  </div>
 
-                    <div className="form-group">
-                      <label>Status</label>
-                      <select 
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      >
-                        <option value="PROSPECT">Prospects</option>
-                        <option value="LEAD">Leads</option>
-                        <option value="OPPORTUNITY">Opportunities</option>
-                        <option value="CLIENT">Clients</option>
-                        <option value="UNQUALIFIED">Unqualified</option>
-                        <option value="DECLINED">Declined</option>
-                        <option value="CHURNED">Churned</option>
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label>Industry</label>
+                    <input
+                      type="text"
+                      value={formData.industry}
+                      onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                      placeholder="Technology, Healthcare, Finance..."
+                    />
+                  </div>
 
-                    <div className="form-group">
-                      <Tooltip text="Overall sentiment or relationship quality with this contact">
-                        <label>Sentiment</label>
-                      </Tooltip>
-                      <select 
-                        value={formData.sentiment}
-                        onChange={(e) => setFormData({ ...formData, sentiment: e.target.value as any })}
-                      >
-                        <option value="GOOD">😊 Good</option>
-                        <option value="NEUTRAL">😐 Neutral</option>
-                        <option value="BAD">😞 Bad</option>
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label>Website</label>
+                    <input
+                      type="text"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      placeholder="company.com or https://company.com"
+                    />
+                  </div>
 
-                    <div className="form-group">
-                      <Tooltip text="Lead quality score from 0.00 to 1.00 (0 = poor, 1 = excellent)">
-                        <label>Lead Score</label>
-                      </Tooltip>
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={formData.leadScore}
-                        onChange={(e) => setFormData({ ...formData, leadScore: e.target.value })}
-                        placeholder="0.75"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label>Source</label>
+                    <input
+                      type="text"
+                      value={formData.source}
+                      onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                      placeholder="Website, Referral, Social Media..."
+                    />
+                  </div>
 
-                    <div className="form-group">
-                      <Tooltip text="Opportunity potential score from 0.00 to 1.00 (0 = low, 1 = high potential)">
-                        <label>Opportunity Score</label>
-                      </Tooltip>
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={formData.opportunityScore}
-                        onChange={(e) => setFormData({ ...formData, opportunityScore: e.target.value })}
-                        placeholder="0.80"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label>Sentiment</label>
+                    <select 
+                      value={formData.sentiment}
+                      onChange={(e) => setFormData({ ...formData, sentiment: e.target.value as any })}
+                    >
+                      <option value="NEUTRAL">😐 Neutral</option>
+                      <option value="GOOD">😊 Good</option>
+                      <option value="BAD">😞 Bad</option>
+                    </select>
+                  </div>
 
-                    <div className="form-group full-width">
-                      <label>Notes</label>
-                      <textarea
-                        value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        rows={3}
-                        placeholder="Add any additional notes about this contact..."
-                      />
-                    </div>
+                  <div className="form-group full-width">
+                    <label>Address</label>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      rows={2}
+                      placeholder="123 Main St, City, State 12345"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>LinkedIn URL</label>
+                    <input
+                      type="url"
+                      value={formData.linkedinUrl}
+                      onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
+                      placeholder="https://linkedin.com/in/username"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Facebook URL</label>
+                    <input
+                      type="url"
+                      value={formData.facebookUrl}
+                      onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
+                      placeholder="https://facebook.com/username"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Instagram URL</label>
+                    <input
+                      type="url"
+                      value={formData.instagramUrl}
+                      onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
+                      placeholder="https://instagram.com/username"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>YouTube URL</label>
+                    <input
+                      type="url"
+                      value={formData.youtubeUrl}
+                      onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
+                      placeholder="https://youtube.com/channel/..."
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>TikTok URL</label>
+                    <input
+                      type="url"
+                      value={formData.tiktokUrl}
+                      onChange={(e) => setFormData({ ...formData, tiktokUrl: e.target.value })}
+                      placeholder="https://tiktok.com/@username"
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label>Notes</label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      rows={3}
+                      placeholder="Add any additional notes about this contact..."
+                    />
                   </div>
                 </div>
 
