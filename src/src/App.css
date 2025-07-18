@@ -209,9 +209,16 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.stat-card.highlight {
-  border: 2px solid #f59e0b;
-  background: #fffbeb;
+/* Default state: only bottom border */
+.stat-card {
+  border: none;
+  border-bottom: 3px solid transparent;
+}
+
+/* Selected state: full border */
+.stat-card.selected {
+  border: 2px solid;
+  border-radius: 8px;
 }
 
 .stat-number {
@@ -241,78 +248,78 @@ body {
 .stat-card.churned {
   background: white;
   color: #1f2937;
-  border: 2px solid #1f2937;
+  border-bottom-color: #1f2937;
 }
 
-.stat-card.churned:hover {
+.stat-card.churned.selected {
+  border-color: #1f2937;
   background: #f9fafb;
-  border-color: #111827;
 }
 
 .stat-card.declined {
   background: white;
   color: #dc2626;
-  border: 2px solid #dc2626;
+  border-bottom-color: #dc2626;
 }
 
-.stat-card.declined:hover {
+.stat-card.declined.selected {
+  border-color: #dc2626;
   background: #fef2f2;
-  border-color: #b91c1c;
 }
 
 .stat-card.unqualified {
   background: white;
   color: #6b7280;
-  border: 2px solid #6b7280;
+  border-bottom-color: #6b7280;
 }
 
-.stat-card.unqualified:hover {
+.stat-card.unqualified.selected {
+  border-color: #6b7280;
   background: #f9fafb;
-  border-color: #4b5563;
 }
 
 .stat-card.prospects {
   background: white;
   color: #2563eb;
-  border: 2px solid #2563eb;
+  border-bottom-color: #2563eb;
 }
 
-.stat-card.prospects:hover {
+.stat-card.prospects.selected {
+  border-color: #2563eb;
   background: #eff6ff;
-  border-color: #1d4ed8;
 }
 
 .stat-card.leads {
   background: white;
   color: #d97706;
-  border: 2px solid #d97706;
+  border-bottom-color: #d97706;
 }
 
-.stat-card.leads:hover {
+.stat-card.leads.selected {
+  border-color: #d97706;
   background: #fffbeb;
-  border-color: #b45309;
 }
 
 .stat-card.opportunities {
   background: white;
   color: #ea580c;
-  border: 2px solid #ea580c;
+  border-bottom-color: #ea580c;
 }
 
-.stat-card.opportunities:hover {
+.stat-card.opportunities.selected {
+  border-color: #ea580c;
   background: #fff7ed;
-  border-color: #c2410c;
 }
 
 .stat-card.clients {
   background: white;
   color: #059669;
-  border: 2px solid #059669;
+  border-bottom-color: #059669;
 }
 
-.stat-card.clients:hover {
+.stat-card.clients.selected {
+  border-color: #059669;
   background: #ecfdf5;
-  border-color: #047857;
 }
 
 /* Pipeline Arrows */

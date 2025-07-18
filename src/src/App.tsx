@@ -116,6 +116,7 @@ function App() {
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
   const [timeFilter, setTimeFilter] = useState<string>('All Time');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   
   // Table sorting
   const [sortField, setSortField] = useState<string>('createdAt');
@@ -682,6 +683,17 @@ function App() {
     }
   };
 
+  // Handle status card filtering
+  const handleStatusCardClick = (status: string) => {
+    if (selectedStatusFilter === status) {
+      // If clicking the same card, deselect it (show all contacts)
+      setSelectedStatusFilter(null);
+    } else {
+      // Select the new status filter
+      setSelectedStatusFilter(status);
+    }
+  };
+
   // Filter and sort contacts
   const filteredContacts = contacts.filter(contact => {
     try {
@@ -714,8 +726,14 @@ function App() {
             break;
         }
       }
+
+      // Status filter based on selected status card
+      let matchesStatus = true;
+      if (selectedStatusFilter) {
+        matchesStatus = contact.status === selectedStatusFilter;
+      }
     
-      return matchesSearch && matchesTimeFilter;
+      return matchesSearch && matchesTimeFilter && matchesStatus;
     } catch (error) {
       console.error('Error filtering contact:', error);
       return false;
@@ -839,43 +857,64 @@ function App() {
         {/* Pipeline Stats Bar */}
         <div className="pipeline-stats-bar">
           <div className="pipeline-stats-container">
-            <div className="stat-card churned">
+            <div 
+              className={`stat-card churned ${selectedStatusFilter === 'CHURNED' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('CHURNED')}
+            >
               <div className="stat-number">{churnedCount}</div>
               <div className="stat-label">CHURNED</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
             <div className="pipeline-arrow">→</div>
-            <div className="stat-card declined">
+            <div 
+              className={`stat-card declined ${selectedStatusFilter === 'DECLINED' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('DECLINED')}
+            >
               <div className="stat-number">{declinedCount}</div>
               <div className="stat-label">DECLINED</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
             <div className="pipeline-arrow">→</div>
-            <div className="stat-card unqualified">
+            <div 
+              className={`stat-card unqualified ${selectedStatusFilter === 'UNQUALIFIED' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('UNQUALIFIED')}
+            >
               <div className="stat-number">{disqualifiedCount}</div>
               <div className="stat-label">UNQUALIFIED</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
             <div className="pipeline-arrow">→</div>
-            <div className="stat-card prospects">
+            <div 
+              className={`stat-card prospects ${selectedStatusFilter === 'PROSPECT' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('PROSPECT')}
+            >
               <div className="stat-number">{prospectCount}</div>
               <div className="stat-label">PROSPECTS</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
             <div className="pipeline-arrow">→</div>
-            <div className="stat-card leads highlight">
+            <div 
+              className={`stat-card leads ${selectedStatusFilter === 'LEAD' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('LEAD')}
+            >
               <div className="stat-number">{leadCount}</div>
               <div className="stat-label">LEADS</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
             <div className="pipeline-arrow">→</div>
-            <div className="stat-card opportunities">
+            <div 
+              className={`stat-card opportunities ${selectedStatusFilter === 'OPPORTUNITY' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('OPPORTUNITY')}
+            >
               <div className="stat-number">{opportunityCount}</div>
               <div className="stat-label">OPPORTUNITIES</div>
               <div className="stat-growth">+100% 28d</div>
             </div>
             <div className="pipeline-arrow">→</div>
-            <div className="stat-card clients">
+            <div 
+              className={`stat-card clients ${selectedStatusFilter === 'CLIENT' ? 'selected' : ''}`}
+              onClick={() => handleStatusCardClick('CLIENT')}
+            >
               <div className="stat-number">{clientCount}</div>
               <div className="stat-label">CLIENTS</div>
               <div className="stat-growth">+100% 28d</div>
