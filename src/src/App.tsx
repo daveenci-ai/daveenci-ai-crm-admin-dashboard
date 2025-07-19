@@ -97,6 +97,15 @@ const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, 
   );
 };
 
+// Helper function to ensure URLs have proper protocol
+const ensureProtocol = (url: string): string => {
+  if (!url) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
 function App() {
   // Authentication state
   const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null);
@@ -116,6 +125,7 @@ function App() {
   // Contact filters
   const [searchTerm, setSearchTerm] = useState('');
   const [timeFilter, setTimeFilter] = useState<string>('All Time');
+  const [sourceFilter, setSourceFilter] = useState<string>('All Sources');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   
   // Table sorting
@@ -732,8 +742,14 @@ function App() {
       if (selectedStatusFilter) {
         matchesStatus = contact.status === selectedStatusFilter;
       }
+
+      // Source filter
+      let matchesSource = true;
+      if (sourceFilter !== 'All Sources') {
+        matchesSource = contact.source === sourceFilter;
+      }
     
-      return matchesSearch && matchesTimeFilter && matchesStatus;
+      return matchesSearch && matchesTimeFilter && matchesStatus && matchesSource;
     } catch (error) {
       console.error('Error filtering contact:', error);
       return false;
@@ -888,11 +904,15 @@ function App() {
               className={`stat-card prospects ${selectedStatusFilter === 'PROSPECT' ? 'selected' : ''}`}
               onClick={() => handleStatusCardClick('PROSPECT')}
             >
-              <div className="stat-number">{prospectCount}</div>
-              <div className="stat-label">PROSPECTS</div>
-              <div className="stat-growth">+100% 28d</div>
+              <div className="pipeline-arrows">← </div>
+              <div className="stat-content">
+                <div className="stat-number">{prospectCount}</div>
+                <div className="stat-label">PROSPECTS</div>
+                <div className="stat-growth">+100% 28d</div>
+              </div>
+              <div className="pipeline-arrows"> →</div>
             </div>
-            <div className="pipeline-arrow">→</div>
+            <div className="pipeline-flow">→</div>
             <div 
               className={`stat-card leads ${selectedStatusFilter === 'LEAD' ? 'selected' : ''}`}
               onClick={() => handleStatusCardClick('LEAD')}
@@ -938,8 +958,19 @@ function App() {
                 </div>
                 <div className="filters-section">
                   <select 
+                    value={sourceFilter} 
+                    onChange={(e) => setSourceFilter(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="All Sources">All Sources</option>
+                    {Array.from(new Set(contacts.map(c => c.source).filter(Boolean))).sort().map(source => (
+                      <option key={source} value={source}>{source}</option>
+                    ))}
+                  </select>
+                  <select 
                     value={timeFilter} 
                     onChange={(e) => setTimeFilter(e.target.value)}
+                    className="filter-select"
                   >
                     <option>All Time</option>
                     <option value="Last Week">Last Week</option>
@@ -947,16 +978,6 @@ function App() {
                     <option value="Last 6 Months">Last 6 Months</option>
                     <option value="Last 12 Months">Last 12 Months</option>
                   </select>
-                  <button 
-                    className="refresh-table-btn"
-                    onClick={() => {
-                      fetchContacts();
-                      fetchRecentTouchpoints();
-                    }}
-                    title="Refresh contacts"
-                  >
-                    🔄 Refresh
-                  </button>
                 </div>
               </div>
             </div>
@@ -964,13 +985,6 @@ function App() {
             <div className="contacts-layout">
               {/* Contacts Table - Full Width */}
               <div className="contacts-table-container">
-                <div className="contacts-table-header">
-                  <div className="table-info">
-                    <span className="contacts-count">
-                      {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
                 <div className="contacts-table">
                   <table>
                     <thead>
@@ -1178,27 +1192,27 @@ function App() {
                         {(selectedContact.linkedinUrl || selectedContact.facebookUrl || selectedContact.instagramUrl || selectedContact.youtubeUrl || selectedContact.tiktokUrl) && (
                           <div className="social-media-icons-head">
                             {selectedContact.linkedinUrl && (
-                              <a href={selectedContact.linkedinUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head linkedin" title="LinkedIn">
+                              <a href={ensureProtocol(selectedContact.linkedinUrl)} target="_blank" rel="noopener noreferrer" className="social-icon-head linkedin" title="LinkedIn">
                                 🔗
                               </a>
                             )}
                             {selectedContact.facebookUrl && (
-                              <a href={selectedContact.facebookUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head facebook" title="Facebook">
+                              <a href={ensureProtocol(selectedContact.facebookUrl)} target="_blank" rel="noopener noreferrer" className="social-icon-head facebook" title="Facebook">
                                 📘
                               </a>
                             )}
                             {selectedContact.instagramUrl && (
-                              <a href={selectedContact.instagramUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head instagram" title="Instagram">
+                              <a href={ensureProtocol(selectedContact.instagramUrl)} target="_blank" rel="noopener noreferrer" className="social-icon-head instagram" title="Instagram">
                                 📸
                               </a>
                             )}
                             {selectedContact.youtubeUrl && (
-                              <a href={selectedContact.youtubeUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head youtube" title="YouTube">
+                              <a href={ensureProtocol(selectedContact.youtubeUrl)} target="_blank" rel="noopener noreferrer" className="social-icon-head youtube" title="YouTube">
                                 📺
                               </a>
                             )}
                             {selectedContact.tiktokUrl && (
-                              <a href={selectedContact.tiktokUrl} target="_blank" rel="noopener noreferrer" className="social-icon-head tiktok" title="TikTok">
+                              <a href={ensureProtocol(selectedContact.tiktokUrl)} target="_blank" rel="noopener noreferrer" className="social-icon-head tiktok" title="TikTok">
                                 🎵
                               </a>
                             )}
@@ -1380,6 +1394,16 @@ function App() {
                     />
                   </div>
 
+                  <div className="form-group full-width">
+                    <label>Notes</label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      rows={3}
+                      placeholder="Add any additional notes about this contact..."
+                    />
+                  </div>
+
                   <div className="form-group">
                     <label>Primary Email *</label>
                     <input
@@ -1520,16 +1544,6 @@ function App() {
                       value={formData.tiktokUrl}
                       onChange={(e) => setFormData({ ...formData, tiktokUrl: e.target.value })}
                       placeholder="https://tiktok.com/@username"
-                    />
-                  </div>
-
-                  <div className="form-group full-width">
-                    <label>Notes</label>
-                    <textarea
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      rows={3}
-                      placeholder="Add any additional notes about this contact..."
                     />
                   </div>
                 </div>
